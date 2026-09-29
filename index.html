@@ -13,6 +13,8 @@
       --primary-green: #17382b;
       --accent-blue: #1848b8;
       --accent-teal: #238b72;
+      --accent-purple: #6d28d9;
+      --accent-amber: #b45309;
       --btn-gray: #ece7dc;
       --text-main: #1f2937;
       --text-muted: #737373;
@@ -39,7 +41,7 @@
       direction: rtl;
     }
 
-    /* شريط الترويسة العلوي */
+    /* الهيدر العلوي */
     .top-header {
       display: flex;
       justify-content: space-between;
@@ -137,63 +139,70 @@
       text-align: right;
     }
 
-    /* بانر الإشعارات */
+    /* بانر الإشعارات: النص يمين والأزرار يسار مطابق للصورة 20 */
     .banner-pwa {
       background: white;
-      border-radius: 16px;
-      padding: 12px 16px;
+      border-radius: 18px;
+      padding: 14px 18px;
       margin-bottom: 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.03);
     }
 
-    .banner-right-actions {
+    .banner-right-content {
       display: flex;
       align-items: center;
       gap: 12px;
+      text-align: right;
     }
 
-    .banner-right-actions .close-x {
-      background: none;
-      border: none;
-      font-size: 14px;
-      color: #777;
-      cursor: pointer;
-    }
-
-    .banner-right-actions a {
-      font-size: 12.5px;
-      font-weight: 800;
+    .banner-right-content .bell-icon {
+      font-size: 20px;
       color: #222;
+      line-height: 1;
+    }
+
+    .banner-right-content p {
+      font-size: 13px;
+      line-height: 1.45;
+      color: #1f2937;
+      font-weight: 700;
+    }
+
+    .banner-left-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .banner-left-actions a {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: #111;
       text-decoration: underline;
       cursor: pointer;
     }
 
-    .banner-left-side {
+    .banner-left-actions .close-x {
+      background: none;
+      border: none;
+      font-size: 15px;
+      color: #777;
+      cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 10px;
-      text-align: left;
+      justify-content: center;
     }
 
-    .banner-left-side p {
-      font-size: 12px;
-      line-height: 1.4;
-      color: #333;
-      font-weight: 600;
-      text-align: left;
-    }
-
-    /* بطاقة الواجب النشط */
+    /* بطاقة التكليف النشط */
     .active-card {
       background: var(--card-active-bg);
       border-radius: 20px;
       padding: 16px 18px;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
       border: 1px solid #dce8fa;
-      position: relative;
     }
 
     .card-flex {
@@ -207,6 +216,8 @@
       display: flex;
       flex-direction: column;
       gap: 6px;
+      flex: 1;
+      padding-left: 10px;
     }
 
     .tags-row {
@@ -216,7 +227,6 @@
     }
 
     .badge-kind {
-      background-color: var(--accent-blue);
       color: white;
       font-size: 11px;
       font-weight: 700;
@@ -224,9 +234,10 @@
       border-radius: 12px;
     }
 
-    .badge-teal {
-      background-color: var(--accent-teal);
-    }
+    .badge-blue { background-color: var(--accent-blue); }
+    .badge-teal { background-color: var(--accent-teal); }
+    .badge-purple { background-color: var(--accent-purple); }
+    .badge-amber { background-color: var(--accent-amber); }
 
     .subject-title {
       font-size: 12.5px;
@@ -241,17 +252,26 @@
       margin-top: 2px;
     }
 
+    .task-desc {
+      font-size: 12.5px;
+      color: #4b5563;
+      line-height: 1.4;
+      margin-top: 4px;
+    }
+
     .author-line {
       font-size: 12px;
       color: #888;
       display: flex;
       align-items: center;
       gap: 6px;
+      margin-top: 4px;
     }
 
     .card-left-time {
       text-align: left;
-      min-width: 90px;
+      min-width: 95px;
+      flex-shrink: 0;
     }
 
     .label-near {
@@ -262,7 +282,7 @@
     }
 
     .countdown-words {
-      font-size: 13.5px;
+      font-size: 13px;
       font-weight: 800;
       color: var(--danger);
       text-align: left;
@@ -278,7 +298,6 @@
       text-align: left;
     }
 
-    /* شريط أسفل البطاقة (سهم التوسيع + زر الحذف) */
     .card-bottom-actions {
       display: flex;
       justify-content: space-between;
@@ -302,17 +321,13 @@
       border-radius: 6px;
     }
 
-    .btn-delete-task:hover {
-      background: rgba(185, 28, 28, 0.08);
-    }
-
     .expand-arrow {
       font-size: 13px;
       color: #8e8e93;
       cursor: pointer;
     }
 
-    /* قسم الأرشيف */
+    /* الأرشيف */
     .archive-header-row {
       display: flex;
       align-items: center;
@@ -344,7 +359,6 @@
       padding: 16px 18px;
       box-shadow: 0 1px 4px rgba(0,0,0,0.02);
       border: 1px solid rgba(0,0,0,0.03);
-      position: relative;
     }
 
     .status-ended {
@@ -454,7 +468,31 @@
       color: #555;
     }
 
-    /* نافذة تأكيد الحذف */
+    /* نافذة تعليمات الآيفون وسامسونج */
+    .device-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 10px;
+      border: 1.5px solid var(--border-soft);
+      background: var(--input-bg);
+      border-radius: 12px;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      color: #444;
+    }
+
+    .tab-btn.active {
+      background: var(--primary-green);
+      color: white;
+      border-color: var(--primary-green);
+    }
+
     .confirm-box {
       background: white;
       width: 88%;
@@ -509,7 +547,6 @@
       cursor: pointer;
     }
 
-    /* تنسيقات نافذة الإضافة */
     .form-group {
       margin-bottom: 16px;
       text-align: right;
@@ -558,7 +595,7 @@
 
     .custom-textarea {
       resize: none;
-      height: 85px;
+      height: 80px;
     }
 
     .datetime-row {
@@ -572,17 +609,6 @@
       color: #8c897f;
       margin-top: 6px;
       display: block;
-    }
-
-    .upload-box {
-      border: 1.5px dashed #cfc9bb;
-      background: #fbf9f4;
-      border-radius: 14px;
-      padding: 14px;
-      text-align: center;
-      font-size: 12.5px;
-      color: #7d796e;
-      cursor: pointer;
     }
 
     .btn-submit-post {
@@ -602,7 +628,7 @@
 </head>
 <body>
 
-  <!-- الترويسة الرئيسية -->
+  <!-- الهيدر العلوي -->
   <header class="top-header">
     <div class="header-right">
       <div class="logo-box" title="جامعة الحدود الشمالية">
@@ -639,61 +665,31 @@
   </header>
 
   <!-- عداد المهام النشطة -->
-  <div class="section-label" id="activeTasksCount">واجب واحد</div>
+  <div class="section-label" id="activeCounterText">واجب واحد</div>
 
-  <!-- بانر الإشعارات -->
+  <!-- بانر الإشعارات: النص يمين والأزرار يسار طبقاً للصورة 20 -->
   <div class="banner-pwa" id="iosBanner">
-    <div class="banner-right-actions">
-      <button class="close-x" onclick="document.getElementById('iosBanner').style.display='none'">✕</button>
+    <div class="banner-right-content">
+      <span class="bell-icon">🔔</span>
+      <p>لتصلك الإشعارات: ثبّت الموقع<br>على الشاشة الرئيسية</p>
+    </div>
+    <div class="banner-left-actions">
       <a href="javascript:void(0)" onclick="openInstructionsModal()">كيف؟</a>
-    </div>
-    <div class="banner-left-side">
-      <p>لتصلك الإشعارات على iPhone: ثبّت الموقع<br>على الشاشة الرئيسية</p>
-      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+      <button class="close-x" onclick="document.getElementById('iosBanner').style.display='none'">✕</button>
     </div>
   </div>
 
-  <!-- قائمة التكليفات النشطة -->
-  <div id="tasksList">
-    <div class="active-card" id="task-active-1">
-      <div class="card-flex">
-        <div class="card-right-info">
-          <div class="tags-row">
-            <span class="badge-kind">واجب</span>
-            <span class="subject-title">الإدارة الإلكترونية للمشاريع</span>
-          </div>
-          <div class="task-title">واجب</div>
-          <div class="author-line">
-            <span>بواسطة سالم الشمري</span>
-            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-          </div>
-        </div>
+  <!-- قائمة الواجبات النشطة -->
+  <div id="tasksList"></div>
 
-        <div class="card-left-time">
-          <div class="label-near">الأقرب</div>
-          <div class="countdown-words">باقي 8 ساعات</div>
-          <div class="digital-clock" id="liveClock">08:25:54</div>
-        </div>
-      </div>
-      <!-- شريط العمليات (توسيع + حذف) -->
-      <div class="card-bottom-actions">
-        <span class="expand-arrow">⌄</span>
-        <button class="btn-delete-task" onclick="confirmDelete('task-active-1', 'واجب الإدارة الإلكترونية')">
-          <span>حذف</span> 🗑️
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- عنوان الأرشيف (1 تكليف فقط) -->
+  <!-- الأرشيف (1 تكليف فقط) -->
   <div class="archive-header-row" onclick="toggleArchive()">
     <span class="arrow-icon" id="archiveArrow">⌄</span>
     <span id="archiveTitleText">المنتهية والأرشيف (1)</span>
   </div>
 
-  <!-- قسم الأرشيف (يحتوي فقط على التكليف المطلوب) -->
   <div class="archive-container" id="archiveContainer">
-    <div class="archive-card" id="task-archive-1">
+    <div class="archive-card" id="task-archive-static">
       <div class="card-flex">
         <div class="card-right-info">
           <div class="tags-row">
@@ -710,26 +706,65 @@
       </div>
       <div class="card-bottom-actions">
         <span></span>
-        <button class="btn-delete-task" onclick="confirmDelete('task-archive-1', 'مناقشة إدارة المشاريع')">
+        <button class="btn-delete-task" onclick="confirmDelete('task-archive-static', 'مناقشة إدارة المشاريع')">
           <span>حذف</span> 🗑️
         </button>
       </div>
     </div>
   </div>
 
-  <!-- روابط الفوتر -->
+  <!-- الفوتر -->
   <div class="footer-admin-links">
     <a href="javascript:void(0)" onclick="openInstructionsModal()">الإشعارات</a>
     <span>•</span>
     <a href="javascript:void(0)" onclick="openAddModal()">الإدمن</a>
   </div>
 
-  <!-- زر إضافة تنبيه الثابت -->
+  <!-- زر إضافة تنبيه -->
   <div class="floating-btn-wrap">
     <button class="btn-add-alert" onclick="openAddModal()">+ إضافة تنبيه</button>
   </div>
 
-  <!-- نافذة تأكيد الحذف المنبثقة -->
+  <!-- نافذة تعليمات التثبيت (تدعم Apple وسامسونج) -->
+  <div class="modal-overlay" id="instructionsModal">
+    <div class="modal-sheet">
+      <div class="sheet-header">
+        <button class="btn-close-circle" onclick="closeInstructionsModal()">✕</button>
+        <div class="sheet-title">تثبيت الموقع والإشعارات</div>
+      </div>
+
+      <div class="device-tabs">
+        <button class="tab-btn active" id="tabApple" onclick="switchDevice('apple')">🍏 Apple (iPhone)</button>
+        <button class="tab-btn" id="tabAndroid" onclick="switchDevice('android')">📱 Samsung (Android)</button>
+      </div>
+
+      <!-- محتوى أبل -->
+      <div id="appleInstructions" style="text-align:right; font-size:14px; line-height:1.7;">
+        <p style="margin-bottom:12px;">على iPhone و iPad لا تعمل الإشعارات إلا بعد <strong>تثبيت الموقع على الشاشة الرئيسية</strong>:</p>
+        <ol style="list-style:none; display:flex; flex-direction:column; gap:10px; margin-bottom:18px; font-weight:600;">
+          <li>1. افتح الرابط في متصفح <strong>Safari</strong>.</li>
+          <li>2. اضغط زر المشاركة (المربع بسهم للأعلى ⎋) أسفل المتصفح.</li>
+          <li>3. اختر <strong>«إضافة إلى الشاشة الرئيسية»</strong> ثم اضغط «إضافة».</li>
+          <li>4. افتح التطبيق من شاشة جوالك وفعّل الإشعارات.</li>
+        </ol>
+      </div>
+
+      <!-- محتوى سامسونج -->
+      <div id="androidInstructions" style="display:none; text-align:right; font-size:14px; line-height:1.7;">
+        <p style="margin-bottom:12px;">على هواتف Samsung وأجهزة Android:</p>
+        <ol style="list-style:none; display:flex; flex-direction:column; gap:10px; margin-bottom:18px; font-weight:600;">
+          <li>1. افتح الرابط في متصفح <strong>Chrome</strong> أو متصفح سامسونج.</li>
+          <li>2. اضغط على قائمة الخيارات (الثلاث نقاط) بالأعلى أو الأسفل.</li>
+          <li>3. اضغط على <strong>«تثبيت التطبيق»</strong> أو «إضافة إلى الشاشة الرئيسية».</li>
+          <li>4. وافق على التثبيت ليصبح تطبيقاً مستقلاً في واجهة هاتفك.</li>
+        </ol>
+      </div>
+
+      <span style="font-size:12px; color:#777; text-align:center; display:block; margin-top:10px;">يعمل الموقع طبيعياً بدون تثبيت، لكن التثبيت يضمن وصول التنبيهات.</span>
+    </div>
+  </div>
+
+  <!-- نافذة تأكيد الحذف -->
   <div class="modal-overlay" id="confirmModal" style="display:none; align-items:center; justify-content:center;">
     <div class="confirm-box">
       <div style="font-size:36px; margin-bottom:10px;">⚠️</div>
@@ -742,27 +777,7 @@
     </div>
   </div>
 
-  <!-- نافذة تعليمات الإشعارات -->
-  <div class="modal-overlay" id="instructionsModal">
-    <div class="modal-sheet">
-      <div class="sheet-header">
-        <button class="btn-close-circle" onclick="closeInstructionsModal()">✕</button>
-        <div class="sheet-title">الإشعارات</div>
-      </div>
-      <div class="instructions-body" style="text-align:right; font-size:14px; line-height:1.6;">
-        <p style="margin-bottom:16px;">على iPhone و iPad لا تعمل الإشعارات إلا بعد <strong>تثبيت الموقع على الشاشة الرئيسية</strong> (قيد من Apple، يتطلب iOS 16.4 أو أحدث):</p>
-        <ol style="list-style:none; display:flex; flex-direction:column; gap:12px; margin-bottom:20px; font-weight:600;">
-          <li>1. افتح الموقع في <strong>Safari</strong>.</li>
-          <li>2. اضغط زر المشاركة ⎋ أسفل الشاشة.</li>
-          <li>3. اختر <strong>«إضافة إلى الشاشة الرئيسية»</strong> ثم «إضافة».</li>
-          <li>4. افتح الموقع من الأيقونة الجديدة، ثم اضغط زر الجرس وفعّل الإشعارات.</li>
-        </ol>
-        <span style="font-size:12px; color:#777; text-align:center; display:block;">بدون التثبيت يعمل الموقع طبيعيًا، لكن بدون إشعارات.</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- نافذة إضافة تنبيه -->
+  <!-- نافذة إضافة تنبيه مع المواد الدقيقة للشعبة -->
   <div class="modal-overlay" id="alertModal">
     <div class="modal-sheet">
       <div class="sheet-header">
@@ -773,10 +788,10 @@
       <div class="form-group">
         <label>النوع</label>
         <div class="type-grid">
-          <button class="type-btn" onclick="selectType(this)">إعلان</button>
-          <button class="type-btn" onclick="selectType(this)">مناقشة</button>
-          <button class="type-btn" onclick="selectType(this)">اختبار</button>
-          <button class="type-btn active" onclick="selectType(this)">واجب</button>
+          <button type="button" class="type-btn" onclick="selectType(this, 'إعلان')">إعلان</button>
+          <button type="button" class="type-btn" onclick="selectType(this, 'مناقشة')">مناقشة</button>
+          <button type="button" class="type-btn" onclick="selectType(this, 'اختبار')">اختبار</button>
+          <button type="button" class="type-btn active" onclick="selectType(this, 'واجب')">واجب</button>
         </div>
       </div>
 
@@ -784,60 +799,235 @@
         <label>المادة</label>
         <select class="custom-select" id="courseSelect">
           <option value="">اختر المادة</option>
-          <option value="إدارة المشاريع">إدارة المشاريع</option>
-          <option value="الإدارة الإلكترونية للمشاريع">الإدارة الإلكترونية للمشاريع</option>
-          <option value="إدارة المشاريع التنموية">إدارة المشاريع التنموية</option>
+          <option value="إدارة الامداد والتموين">إدارة الامداد والتموين</option>
+          <option value="إدارة الجودة في المشاريع">إدارة الجودة في المشاريع</option>
+          <option value="إدارة المخاطر في المشاريع">إدارة المخاطر في المشاريع</option>
+          <option value="الإدارة الالكترونية للمشاريع">الإدارة الالكترونية للمشاريع</option>
           <option value="الجدوى الاقتصادية للمشاريع">الجدوى الاقتصادية للمشاريع</option>
           <option value="تمويل المشاريع">تمويل المشاريع</option>
+          <option value="مشروع تطبيقي">مشروع تطبيقي</option>
+          <option value="أخرى">أخرى</option>
         </select>
       </div>
 
       <div class="form-group">
         <label>عنوان مختصر</label>
-        <input type="text" class="custom-input" placeholder="مثال: تسليم دراسة حالة الفصل الثالث">
+        <input type="text" class="custom-input" id="taskTitleInput" placeholder="مثال: واجب 1 / تسليم دراسة حالة">
       </div>
 
       <div class="form-group">
         <label>تفاصيل إضافية (اختياري)</label>
-        <textarea class="custom-textarea" placeholder="أي تفاصيل أو ملاحظات تفيد الشعبة..."></textarea>
+        <textarea class="custom-textarea" id="taskDescInput" placeholder="أي تفاصيل أو ملاحظات تفيد الشعبة..."></textarea>
       </div>
 
       <div class="form-group">
         <label>موعد الانتهاء</label>
         <div class="datetime-row">
-          <input type="time" class="custom-input" value="23:59">
-          <input type="date" class="custom-input">
+          <input type="time" class="custom-input" id="taskTimeInput" value="23:59">
+          <input type="date" class="custom-input" id="taskDateInput">
         </div>
         <span class="sub-hint">غير مطلوب لنوع «إعلان» · بتوقيت السعودية</span>
       </div>
 
-      <div class="form-group">
-        <label>صورة (اختياري)</label>
-        <div class="upload-box" onclick="alert('خاصية إرفاق صورة')">
-          اضغط لاختيار صورة من الجهاز...
-        </div>
-      </div>
-
-      <button class="btn-submit-post" onclick="publishAlert()">نشر التنبيه</button>
+      <button type="button" class="btn-submit-post" onclick="handlePublish()">نشر التنبيه</button>
     </div>
   </div>
 
   <script>
-    // عداد الوقت
-    let s = 54, m = 25, h = 8;
-    setInterval(() => {
-      if (s > 0) s--;
-      else {
-        s = 59;
-        if (m > 0) m--;
-        else { m = 59; if (h > 0) h--; }
+    const defaultTasks = [
+      {
+        id: 'task-1',
+        type: 'واجب',
+        course: 'الإدارة الالكترونية للمشاريع',
+        title: 'واجب',
+        desc: '',
+        author: 'سالم الشمري',
+        dueDate: new Date(Date.now() + 8.5 * 3600 * 1000).toISOString()
       }
-      const pad = (n) => String(n).padStart(2, '0');
-      const el = document.getElementById('liveClock');
-      if (el) el.innerText = `${pad(h)}:${pad(m)}:${pad(s)}`;
-    }, 1000);
+    ];
 
-    // فتح وغلق الأرشيف
+    let currentType = 'واجب';
+    let itemToDelete = null;
+
+    function getSavedTasks() {
+      const data = localStorage.getItem('pm2_tasks_data');
+      return data ? JSON.parse(data) : defaultTasks;
+    }
+
+    function saveTasksList(tasks) {
+      localStorage.setItem('pm2_tasks_data', JSON.stringify(tasks));
+      renderTasks();
+    }
+
+    function renderTasks() {
+      const tasks = getSavedTasks();
+      const container = document.getElementById('tasksList');
+      const counter = document.getElementById('activeCounterText');
+      container.innerHTML = '';
+
+      if (tasks.length === 0) {
+        counter.innerText = 'لا توجد واجبات نشطة حالياً';
+        container.innerHTML = '<div style="text-align:center; padding:30px; color:#888; font-size:14px; background:white; border-radius:16px;">لا توجد أي تكليفات نشطة. اضغط بالأسفل لإضافة تنبيه جديد.</div>';
+        return;
+      }
+
+      if (tasks.length === 1) counter.innerText = 'واجب واحد';
+      else if (tasks.length === 2) counter.innerText = 'واجبان';
+      else counter.innerText = `${tasks.length} واجبات`;
+
+      tasks.forEach((t) => {
+        let badgeColorClass = 'badge-blue';
+        if (t.type === 'مناقشة') badgeColorClass = 'badge-teal';
+        else if (t.type === 'اختبار') badgeColorClass = 'badge-purple';
+        else if (t.type === 'إعلان') badgeColorClass = 'badge-amber';
+
+        const card = document.createElement('div');
+        card.className = 'active-card';
+        card.id = `card-${t.id}`;
+        card.innerHTML = `
+          <div class="card-flex">
+            <div class="card-right-info">
+              <div class="tags-row">
+                <span class="badge-kind ${badgeColorClass}">${t.type}</span>
+                <span class="subject-title">${t.course}</span>
+              </div>
+              <div class="task-title">${t.title}</div>
+              ${t.desc ? `<div class="task-desc">${t.desc}</div>` : ''}
+              <div class="author-line">
+                <span>بواسطة ${t.author || 'سالم الشمري'}</span>
+                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+              </div>
+            </div>
+
+            <div class="card-left-time">
+              <div class="label-near">الأقرب</div>
+              <div class="countdown-words" id="remain-words-${t.id}">جاري الحساب...</div>
+              <div class="digital-clock" id="clock-${t.id}">00:00:00</div>
+            </div>
+          </div>
+
+          <div class="card-bottom-actions">
+            <span class="expand-arrow">⌄</span>
+            <button class="btn-delete-task" onclick="confirmDelete('${t.id}', '${t.title}')">
+              <span>حذف</span> 🗑️
+            </button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+
+      updateAllTimers();
+    }
+
+    function updateAllTimers() {
+      const tasks = getSavedTasks();
+      const now = new Date().getTime();
+
+      tasks.forEach(t => {
+        if (!t.dueDate) return;
+        const target = new Date(t.dueDate).getTime();
+        const diff = target - now;
+
+        const wordsEl = document.getElementById(`remain-words-${t.id}`);
+        const clockEl = document.getElementById(`clock-${t.id}`);
+
+        if (diff <= 0) {
+          if (wordsEl) wordsEl.innerText = 'انتهى الموعد';
+          if (clockEl) clockEl.innerText = '00:00:00';
+          return;
+        }
+
+        const hrs = Math.floor(diff / (1000 * 60 * 60));
+        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+        const pad = (n) => String(n).padStart(2, '0');
+
+        if (wordsEl) {
+          if (hrs >= 24) {
+            const days = Math.floor(hrs / 24);
+            wordsEl.innerText = `باقي ${days} يوم`;
+          } else {
+            wordsEl.innerText = `باقي ${hrs} ساعات`;
+          }
+        }
+
+        if (clockEl) {
+          clockEl.innerText = `${pad(hrs)}:${pad(mins)}:${pad(secs)}`;
+        }
+      });
+    }
+
+    setInterval(updateAllTimers, 1000);
+
+    function handlePublish() {
+      const course = document.getElementById('courseSelect').value.trim();
+      const title = document.getElementById('taskTitleInput').value.trim();
+      const desc = document.getElementById('taskDescInput').value.trim();
+      const dateVal = document.getElementById('taskDateInput').value;
+      const timeVal = document.getElementById('taskTimeInput').value || '23:59';
+
+      if (!course) {
+        alert('يرجى اختيار المادة');
+        return;
+      }
+      if (!title) {
+        alert('يرجى كتابة عنوان التكليف');
+        return;
+      }
+
+      let dueIso = '';
+      if (dateVal) {
+        dueIso = new Date(`${dateVal}T${timeVal}:00`).toISOString();
+      } else {
+        dueIso = new Date(Date.now() + 12 * 3600 * 1000).toISOString();
+      }
+
+      const newTask = {
+        id: 'task-' + Date.now(),
+        type: currentType,
+        course: course,
+        title: title,
+        desc: desc,
+        author: 'سالم الشمري',
+        dueDate: dueIso
+      };
+
+      const tasks = getSavedTasks();
+      tasks.unshift(newTask);
+      saveTasksList(tasks);
+
+      document.getElementById('taskTitleInput').value = '';
+      document.getElementById('taskDescInput').value = '';
+      closeAddModal();
+    }
+
+    function confirmDelete(id, name) {
+      itemToDelete = id;
+      document.getElementById('confirmMessageText').innerText = `هل أنت متأكد من حذف «${name}»؟`;
+      document.getElementById('confirmModal').style.display = 'flex';
+    }
+
+    function closeConfirmModal() {
+      itemToDelete = null;
+      document.getElementById('confirmModal').style.display = 'none';
+    }
+
+    function executeDelete() {
+      if (!itemToDelete) return;
+
+      if (itemToDelete === 'task-archive-static') {
+        const el = document.getElementById('task-archive-static');
+        if (el) el.remove();
+        document.getElementById('archiveTitleText').innerText = 'المنتهية والأرشيف (0)';
+      } else {
+        let tasks = getSavedTasks();
+        tasks = tasks.filter(t => t.id !== itemToDelete);
+        saveTasksList(tasks);
+      }
+      closeConfirmModal();
+    }
+
     function toggleArchive() {
       const box = document.getElementById('archiveContainer');
       const arrow = document.getElementById('archiveArrow');
@@ -850,34 +1040,29 @@
       }
     }
 
-    // منطق حذف التكليف مع التأكيد
-    let itemToDeleteId = null;
-
-    function confirmDelete(elementId, taskName) {
-      itemToDeleteId = elementId;
-      document.getElementById('confirmMessageText').innerText = `هل أنت متأكد من حذف «${taskName}»؟`;
-      document.getElementById('confirmModal').style.display = 'flex';
+    function selectType(btn, typeName) {
+      document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentType = typeName;
     }
 
-    function closeConfirmModal() {
-      itemToDeleteId = null;
-      document.getElementById('confirmModal').style.display = 'none';
-    }
+    function switchDevice(type) {
+      const tabA = document.getElementById('tabApple');
+      const tabB = document.getElementById('tabAndroid');
+      const appI = document.getElementById('appleInstructions');
+      const andI = document.getElementById('androidInstructions');
 
-    function executeDelete() {
-      if (itemToDeleteId) {
-        const target = document.getElementById(itemToDeleteId);
-        if (target) {
-          target.remove();
-          // تحديث عدادات المهام الظاهرة
-          if (itemToDeleteId.includes('active')) {
-            document.getElementById('activeTasksCount').innerText = 'لا توجد واجبات نشطة حالياً';
-          } else if (itemToDeleteId.includes('archive')) {
-            document.getElementById('archiveTitleText').innerText = 'المنتهية والأرشيف (0)';
-          }
-        }
+      if (type === 'apple') {
+        tabA.classList.add('active');
+        tabB.classList.remove('active');
+        appI.style.display = 'block';
+        andI.style.display = 'none';
+      } else {
+        tabB.classList.add('active');
+        tabA.classList.remove('active');
+        andI.style.display = 'block';
+        appI.style.display = 'none';
       }
-      closeConfirmModal();
     }
 
     function openAddModal() { document.getElementById('alertModal').style.display = 'flex'; }
@@ -885,15 +1070,12 @@
     function openInstructionsModal() { document.getElementById('instructionsModal').style.display = 'flex'; }
     function closeInstructionsModal() { document.getElementById('instructionsModal').style.display = 'none'; }
 
-    function selectType(btn) {
-      document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-    }
-
-    function publishAlert() {
-      alert("تم نشر التنبيه بنجاح!");
-      closeAddModal();
-    }
+    window.addEventListener('DOMContentLoaded', () => {
+      const today = new Date().toISOString().split('T')[0];
+      const dateInp = document.getElementById('taskDateInput');
+      if (dateInp) dateInp.value = today;
+      renderTasks();
+    });
   </script>
 </body>
 </html>
