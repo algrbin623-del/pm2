@@ -3,7 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>دبلوم عالي إدارة المشاريع | الشعبة الثانية</title>
+  <title>الشعبة الثانية | إدارة المشاريع</title>
+  
+  <!-- إعدادات تطبيق الويب والتثبيت للآيفون وسامسونج -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#17382b">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="الشعبة الثانية">
+  
+  <!-- أيقونة التطبيق الرسمية بشعار الجامعة للشاشة الرئيسية -->
+  <link rel="apple-touch-icon" href="https://api.iconify.design/fluent-emoji-flat:graduation-cap.svg">
+  <link rel="icon" type="image/svg+xml" href="https://api.iconify.design/fluent-emoji-flat:graduation-cap.svg">
+
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -26,7 +38,6 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; -webkit-tap-highlight-color: transparent; }
     body { background-color: var(--bg-cream); color: var(--text-main); padding: 16px 16px 120px; max-width: 480px; margin: 0 auto; min-height: 100vh; direction: rtl; }
 
-    /* الهيدر العلوي */
     .top-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
     .header-right { display: flex; align-items: center; gap: 12px; text-align: right; }
     .logo-box { width: 46px; height: 46px; background: #e8e3d5; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; padding: 3px; }
@@ -35,13 +46,13 @@
     .header-text .group-title { font-size: 22px; font-weight: 800; color: var(--primary-green); line-height: 1.1; }
     .header-left-actions { display: flex; align-items: center; gap: 8px; }
     .icon-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--btn-gray); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #333; }
+    .icon-btn.active-bell { color: #17382b; background: #d7e8db; }
     .view-pill { display: flex; background: var(--btn-gray); padding: 3px; border-radius: 20px; }
     .view-pill button { border: none; background: transparent; padding: 4px 8px; border-radius: 16px; cursor: pointer; color: #666; display: flex; align-items: center; justify-content: center; }
     .view-pill button.active { background: var(--primary-green); color: white; }
 
     .section-label { font-size: 13.5px; font-weight: 700; color: #444; margin-bottom: 12px; text-align: right; }
 
-    /* بانر الإشعارات */
     .banner-pwa { background: white; border-radius: 18px; padding: 14px 18px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 4px rgba(0,0,0,0.03); }
     .banner-right-content { display: flex; align-items: center; gap: 12px; text-align: right; }
     .banner-right-content .bell-icon { font-size: 20px; color: #222; }
@@ -50,7 +61,6 @@
     .banner-left-actions a { font-size: 13.5px; font-weight: 800; color: #111; text-decoration: underline; cursor: pointer; }
     .banner-left-actions .close-x { background: none; border: none; font-size: 15px; color: #777; cursor: pointer; }
 
-    /* بطاقة التكليف النشط */
     .active-card { background: var(--card-active-bg); border-radius: 20px; padding: 16px 18px; margin-bottom: 14px; border: 1px solid #dce8fa; }
     .card-flex { display: flex; justify-content: space-between; align-items: flex-start; }
     .card-right-info { text-align: right; display: flex; flex-direction: column; gap: 6px; flex: 1; padding-left: 10px; }
@@ -73,7 +83,6 @@
     .btn-delete-task { background: none; border: none; color: #b91c1c; font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 4px; cursor: pointer; padding: 3px 6px; border-radius: 6px; }
     .expand-arrow { font-size: 13px; color: #8e8e93; cursor: pointer; }
 
-    /* الأرشيف */
     .archive-header-row { display: flex; align-items: center; gap: 8px; margin-top: 26px; margin-bottom: 14px; cursor: pointer; color: #374151; font-weight: 700; font-size: 13px; user-select: none; }
     .archive-header-row .arrow-icon { font-size: 12px; color: #6b7280; transition: transform 0.2s ease; }
     .archive-container { display: flex; flex-direction: column; gap: 12px; }
@@ -81,24 +90,17 @@
     .status-ended { font-size: 12px; font-weight: 700; color: #888; text-align: left; }
     .ended-time { font-size: 11px; color: #aaa; margin-top: 2px; text-align: left; }
 
-    /* الفوتر */
     .footer-admin-links { display: flex; justify-content: center; gap: 16px; font-size: 13px; color: #71717a; font-weight: 600; margin-top: 40px; }
     .footer-admin-links a { color: #71717a; text-decoration: none; cursor: pointer; }
 
-    /* زر إضافة تنبيه */
     .floating-btn-wrap { position: fixed; bottom: 24px; left: 0; right: 0; max-width: 480px; margin: 0 auto; padding: 0 16px; z-index: 50; }
     .btn-add-alert { width: 100%; background: var(--primary-green); color: white; border: none; border-radius: 16px; padding: 16px; font-size: 16px; font-weight: 700; box-shadow: 0 8px 20px rgba(23, 56, 43, 0.28); cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; }
 
-    /* النوافذ المنبثقة */
     .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: flex-end; }
     .modal-sheet { background: var(--bg-cream); width: 100%; max-height: 92vh; overflow-y: auto; border-radius: 28px 28px 0 0; padding: 22px 20px 32px; box-shadow: 0 -8px 30px rgba(0,0,0,0.2); }
     .sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
     .sheet-title { font-size: 20px; font-weight: 800; color: #111; }
     .btn-close-circle { width: 34px; height: 34px; border-radius: 50%; background: #e7e2d5; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: #555; }
-
-    .device-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
-    .tab-btn { flex: 1; padding: 10px; border: 1.5px solid var(--border-soft); background: var(--input-bg); border-radius: 12px; font-size: 13.5px; font-weight: 700; cursor: pointer; color: #444; }
-    .tab-btn.active { background: var(--primary-green); color: white; border-color: var(--primary-green); }
 
     .confirm-box { background: white; width: 88%; max-width: 340px; border-radius: 20px; padding: 24px 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2); margin: auto; }
     .confirm-title { font-size: 18px; font-weight: 800; color: #111; margin-bottom: 8px; }
@@ -117,11 +119,25 @@
     .datetime-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .sub-hint { font-size: 11px; color: #8c897f; margin-top: 6px; display: block; }
     .btn-submit-post { width: 100%; background: var(--primary-green); color: white; border: none; border-radius: 16px; padding: 16px; font-size: 16px; font-weight: 800; cursor: pointer; margin-top: 14px; box-shadow: 0 4px 12px rgba(23, 56, 43, 0.25); }
+
+    /* أزرار نافذة الإشعارات المطابقة للصورة الأصلية */
+    .btn-toggle-notif {
+      width: 100%;
+      background: #ece7dc;
+      color: #374151;
+      border: none;
+      border-radius: 14px;
+      padding: 13px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 20px;
+    }
   </style>
 </head>
 <body>
 
-  <!-- الهيدر العلوي -->
+  <!-- الترويسة الرئيسية -->
   <header class="top-header">
     <div class="header-right">
       <div class="logo-box" title="جامعة الحدود الشمالية">
@@ -143,7 +159,7 @@
     </div>
 
     <div class="header-left-actions">
-      <button class="icon-btn" title="التنبيهات" onclick="openInstructionsModal()">
+      <button class="icon-btn" id="bellBtn" title="الإشعارات" onclick="openNotifSheet()">
         <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
       </button>
       <div class="view-pill">
@@ -158,7 +174,7 @@
   </header>
 
   <!-- عداد المهام النشطة -->
-  <div class="section-label" id="activeCounterText">جاري تحميل التكليفات...</div>
+  <div class="section-label" id="activeCounterText">جاري التحميل...</div>
 
   <!-- بانر الإشعارات -->
   <div class="banner-pwa" id="iosBanner">
@@ -167,12 +183,12 @@
       <p>لتصلك الإشعارات: ثبّت الموقع<br>على الشاشة الرئيسية</p>
     </div>
     <div class="banner-left-actions">
-      <a href="javascript:void(0)" onclick="openInstructionsModal()">كيف؟</a>
+      <a href="javascript:void(0)" onclick="openNotifSheet()">كيف؟</a>
       <button class="close-x" onclick="document.getElementById('iosBanner').style.display='none'">✕</button>
     </div>
   </div>
 
-  <!-- قائمة الواجبات النشطة المشتركة -->
+  <!-- قائمة الواجبات النشطة المشتركة سحابياً -->
   <div id="tasksList"></div>
 
   <!-- الأرشيف (1 تكليف فقط) -->
@@ -208,7 +224,7 @@
 
   <!-- الفوتر -->
   <div class="footer-admin-links">
-    <a href="javascript:void(0)" onclick="openInstructionsModal()">الإشعارات</a>
+    <a href="javascript:void(0)" onclick="openNotifSheet()">الإشعارات</a>
     <span>•</span>
     <a href="javascript:void(0)" onclick="openAddModal()">الإدمن</a>
   </div>
@@ -218,40 +234,39 @@
     <button class="btn-add-alert" onclick="openAddModal()">+ إضافة تنبيه</button>
   </div>
 
-  <!-- نافذة تعليمات التثبيت -->
-  <div class="modal-overlay" id="instructionsModal">
+  <!-- نافذة الإشعارات المطابقة للأصل بالملي -->
+  <div class="modal-overlay" id="notifModal">
     <div class="modal-sheet">
       <div class="sheet-header">
-        <button class="btn-close-circle" onclick="closeInstructionsModal()">✕</button>
-        <div class="sheet-title">تثبيت الموقع والإشعارات</div>
+        <button class="btn-close-circle" onclick="closeNotifSheet()">✕</button>
+        <div class="sheet-title">الإشعارات</div>
       </div>
 
-      <div class="device-tabs">
-        <button class="tab-btn active" id="tabApple" onclick="switchDevice('apple')">🍏 Apple (iPhone)</button>
-        <button class="tab-btn" id="tabAndroid" onclick="switchDevice('android')">📱 Samsung (Android)</button>
-      </div>
+      <div style="text-align:right; font-size:14px; line-height:1.7;">
+        <p style="font-size:15px; font-weight:800; color:#111; margin-bottom:12px;" id="notifStatusTitle">
+          الإشعارات مفعّلة على هذا الجهاز.
+        </p>
 
-      <div id="appleInstructions" style="text-align:right; font-size:14px; line-height:1.7;">
-        <p style="margin-bottom:12px;">على iPhone و iPad لا تعمل الإشعارات إلا بعد <strong>تثبيت الموقع على الشاشة الرئيسية</strong>:</p>
-        <ol style="list-style:none; display:flex; flex-direction:column; gap:10px; margin-bottom:18px; font-weight:600;">
-          <li>1. افتح الرابط في متصفح <strong>Safari</strong>.</li>
-          <li>2. اضغط زر المشاركة (المربع بسهم للأعلى ⎋) أسفل المتصفح.</li>
-          <li>3. اختر <strong>«إضافة إلى الشاشة الرئيسية»</strong> ثم اضغط «إضافة».</li>
-          <li>4. افتح التطبيق من شاشة جوالك وفعّل الإشعارات.</li>
-        </ol>
-      </div>
+        <p style="color:#4b5563; font-weight:600; margin-bottom:10px;">تصلك إشعارات:</p>
+        <ul style="list-style:none; padding-right:4px; display:flex; flex-direction:column; gap:8px; color:#374151; font-weight:600; margin-bottom:16px;">
+          <li>• عند نشر تنبيه جديد</li>
+          <li>• قبل الموعد بـ 24 ساعة</li>
+          <li>• قبل الموعد بساعتين</li>
+        </ul>
 
-      <div id="androidInstructions" style="display:none; text-align:right; font-size:14px; line-height:1.7;">
-        <p style="margin-bottom:12px;">على هواتف Samsung وأجهزة Android:</p>
-        <ol style="list-style:none; display:flex; flex-direction:column; gap:10px; margin-bottom:18px; font-weight:600;">
-          <li>1. افتح الرابط في متصفح <strong>Chrome</strong> أو متصفح سامسونج.</li>
-          <li>2. اضغط على قائمة الخيارات (الثلاث نقاط) بالأعلى أو الأسفل.</li>
-          <li>3. اضغط على <strong>«تثبيت التطبيق»</strong> أو «إضافة إلى الشاشة الرئيسية».</li>
-          <li>4. وافق على التثبيت ليصبح تطبيقاً مستقلاً في واجهة هاتفك.</li>
-        </ol>
-      </div>
+        <p style="font-size:12px; color:#777; line-height:1.5; margin-bottom:14px;">
+          قد يتأخر وصول الإشعار بضع دقائق. الموقع يبقى المرجع الأساسي - افتحه للتأكد من التفاصيل.
+        </p>
 
-      <span style="font-size:12px; color:#777; text-align:center; display:block; margin-top:10px;">يعمل الموقع طبيعياً بدون تثبيت، لكن التثبيت يضمن وصول التنبيهات.</span>
+        <!-- يظهر هذا التنبيه إذا كان المستخدم لم يثبت التطبيق بعد -->
+        <div id="pwaInstructionBox" style="background:#f0ece1; padding:12px; border-radius:12px; font-size:12.5px; color:#555; margin-bottom:12px; display:none;">
+          💡 على iPhone: اضغط زر المشاركة (المربع بسهم ⎋) ثم <strong>«إضافة إلى الشاشة الرئيسية»</strong> لتصلك التنبيهات.
+        </div>
+
+        <button class="btn-toggle-notif" id="btnNotifToggle" onclick="handleNotificationToggle()">
+          إيقاف الإشعارات على هذا الجهاز
+        </button>
+      </div>
     </div>
   </div>
 
@@ -260,7 +275,7 @@
     <div class="confirm-box">
       <div style="font-size:36px; margin-bottom:10px;">⚠️</div>
       <div class="confirm-title">تأكيد الحذف</div>
-      <div class="confirm-desc" id="confirmMessageText">هل أنت متأكد من رغبتك في حذف هذا التكليف نهائياً؟</div>
+      <div class="confirm-desc" id="confirmMessageText">هل أنت متأكد من حذف هذا التكليف نهائياً؟</div>
       <div class="confirm-actions">
         <button class="btn-action-del" id="btnConfirmDelete" onclick="executeDelete()">نعم، احذف</button>
         <button class="btn-action-cancel" onclick="closeConfirmModal()">إلغاء</button>
@@ -325,7 +340,6 @@
   </div>
 
   <script>
-    // رابط قاعدة بيانات Firebase الخاصة بك
     const DB_URL = "https://pm2-6f219-default-rtdb.firebaseio.com/tasks.json";
 
     const initialDefaultTasks = [
@@ -370,30 +384,165 @@
     let currentTasksList = [];
     let currentType = 'واجب';
     let itemToDelete = null;
+    let knownTaskIds = new Set();
+    let isFirstLoad = true;
 
-    // جلب البيانات من السحابة لجميع المستخدمين
+    // تسجيل Service Worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(err => console.log('SW reg error:', err));
+    }
+
+    // إدارة الإشعارات وواجهتها المطابقة للأصل
+    function isNotificationEnabled() {
+      return ('Notification' in window) && Notification.permission === 'granted';
+    }
+
+    function updateNotifModalUI() {
+      const titleEl = document.getElementById('notifStatusTitle');
+      const btnEl = document.getElementById('btnNotifToggle');
+      const bellEl = document.getElementById('bellBtn');
+      const isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
+      const pwaBox = document.getElementById('pwaInstructionBox');
+
+      if (pwaBox) {
+        pwaBox.style.display = isStandalone ? 'none' : 'block';
+      }
+
+      if (isNotificationEnabled()) {
+        titleEl.innerText = 'الإشعارات مفعلة على هذا الجهاز.';
+        titleEl.style.color = '#1b4d3e';
+        btnEl.innerText = 'إيقاف الإشعارات على هذا الجهاز';
+        btnEl.style.background = '#ece7dc';
+        btnEl.style.color = '#374151';
+        if (bellEl) bellEl.classList.add('active-bell');
+      } else {
+        titleEl.innerText = 'الإشعارات غير مفعلة على هذا الجهاز.';
+        titleEl.style.color = '#cf4324';
+        btnEl.innerText = 'تفعيل الإشعارات على هذا الجهاز';
+        btnEl.style.background = '#17382b';
+        btnEl.style.color = '#ffffff';
+        if (bellEl) bellEl.classList.remove('active-bell');
+      }
+    }
+
+    function handleNotificationToggle() {
+      if (!('Notification' in window)) {
+        alert('الإشعارات تتطلب تثبيت الموقع على الشاشة الرئيسية عبر متصفح Safari أولاً.');
+        return;
+      }
+
+      if (isNotificationEnabled()) {
+        alert('لإيقاف الإشعارات، يمكنك تعطيلها مباشرة من إعدادات الجوال > الإشعارات.');
+      } else {
+        Notification.requestPermission().then((perm) => {
+          if (perm === 'granted') {
+            updateNotifModalUI();
+            triggerPushNotification('تم تفعيل التنبيهات بنجاح 🔔', 'ستصلك التنبيهات فور نشر أي تكليف وقبل موعده بـ 24 ساعة وبساعتين.');
+          } else {
+            alert('يرجى السماح بالإشعارات من نافذة الهاتف لتفعيلها.');
+          }
+        });
+      }
+      updateNotifModalUI();
+    }
+
+    function openNotifSheet() {
+      updateNotifModalUI();
+      document.getElementById('notifModal').style.display = 'flex';
+    }
+
+    function closeNotifSheet() {
+      document.getElementById('notifModal').style.display = 'none';
+    }
+
+    function triggerPushNotification(title, body, tag) {
+      if (!isNotificationEnabled()) return;
+
+      if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({
+          type: 'SHOW_NOTIFICATION',
+          title: title,
+          body: body,
+          tag: tag || 'pm2-alert'
+        });
+      } else {
+        new Notification(title, {
+          body: body,
+          icon: 'https://api.iconify.design/fluent-emoji-flat:graduation-cap.svg'
+        });
+      }
+    }
+
+    function checkDeadlinesNotifications() {
+      if (!isNotificationEnabled()) return;
+      const now = Date.now();
+
+      currentTasksList.forEach(t => {
+        if (!t.dueDate) return;
+        const target = new Date(t.dueDate).getTime();
+        const diffHours = (target - now) / (1000 * 60 * 60);
+
+        const key24 = `notif_24h_${t.id}`;
+        if (diffHours > 0 && diffHours <= 24 && !localStorage.getItem(key24)) {
+          triggerPushNotification(
+            `⏳ موعد تسليم يقترب: ${t.type}`,
+            `باقي 24 ساعة على موعد «${t.title}» في ${t.course}`,
+            `due-24-${t.id}`
+          );
+          localStorage.setItem(key24, 'true');
+        }
+
+        const key2h = `notif_2h_${t.id}`;
+        if (diffHours > 0 && diffHours <= 2 && !localStorage.getItem(key2h)) {
+          triggerPushNotification(
+            `🚨 تنبيه عاجل: ${t.type}`,
+            `باقي ساعتان فقط على موعد «${t.title}» في ${t.course}!`,
+            `due-2-${t.id}`
+          );
+          localStorage.setItem(key2h, 'true');
+        }
+      });
+    }
+
+    // المزامنة مع قاعدة البيانات السحابية
     async function fetchCloudTasks() {
       try {
         const res = await fetch(DB_URL);
         const data = await res.json();
-        if (data && Array.isArray(data)) {
-          currentTasksList = data;
-        } else if (data && typeof data === 'object') {
-          currentTasksList = Object.values(data);
-        } else {
-          // إذا كانت القاعدة جديدة وفارغة، نرفع المهام الافتراضية
-          currentTasksList = initialDefaultTasks;
-          await saveCloudTasks(currentTasksList);
+        let loaded = [];
+
+        if (data && Array.isArray(data)) loaded = data;
+        else if (data && typeof data === 'object') loaded = Object.values(data);
+        else {
+          loaded = initialDefaultTasks;
+          await saveCloudTasks(loaded);
         }
+
+        if (!isFirstLoad) {
+          loaded.forEach(t => {
+            if (!knownTaskIds.has(t.id)) {
+              triggerPushNotification(
+                `📢 تكليف جديد: ${t.type}`,
+                `${t.course}: ${t.title} (بواسطة ${t.author || 'سالم الشمري'})`,
+                `new-${t.id}`
+              );
+            }
+          });
+        }
+
+        knownTaskIds = new Set(loaded.map(t => t.id));
+        isFirstLoad = false;
+        currentTasksList = loaded;
         renderTasks();
+        checkDeadlinesNotifications();
       } catch (err) {
-        console.error("فشل الاتصال بقاعدة البيانات، جاري استخدام النسخة المحلية:", err);
-        currentTasksList = initialDefaultTasks;
-        renderTasks();
+        if (currentTasksList.length === 0) {
+          currentTasksList = initialDefaultTasks;
+          renderTasks();
+        }
       }
     }
 
-    // حفظ البيانات في السحابة فوراً
     async function saveCloudTasks(tasks) {
       try {
         await fetch(DB_URL, {
@@ -402,7 +551,7 @@
           body: JSON.stringify(tasks)
         });
       } catch (err) {
-        console.error("خطأ أثناء الحفظ بالسحابة:", err);
+        console.error("Cloud save error:", err);
       }
     }
 
@@ -492,11 +641,8 @@
         const pad = (n) => String(n).padStart(2, '0');
 
         if (wordsEl) {
-          if (days >= 1) {
-            wordsEl.innerText = `باقي ${days} يوم`;
-          } else {
-            wordsEl.innerText = `باقي ${hrs} ساعات`;
-          }
+          if (days >= 1) wordsEl.innerText = `باقي ${days} يوم`;
+          else wordsEl.innerText = `باقي ${hrs} ساعات`;
         }
 
         if (clockEl) {
@@ -506,11 +652,9 @@
     }
 
     setInterval(updateAllTimers, 1000);
-
-    // تحديث دوري تلقائي كل 5 ثوانٍ ليتزامن كل جوال بالثواني مع التكليفات الجديدة
     setInterval(fetchCloudTasks, 5000);
+    setInterval(checkDeadlinesNotifications, 60000);
 
-    // نشر التكليف إلى السحابة فوراً
     async function handlePublish() {
       const course = document.getElementById('courseSelect').value.trim();
       const title = document.getElementById('taskTitleInput').value.trim();
@@ -526,11 +670,8 @@
       btn.disabled = true;
 
       let dueIso = '';
-      if (dateVal) {
-        dueIso = new Date(`${dateVal}T${timeVal}:00`).toISOString();
-      } else {
-        dueIso = new Date(Date.now() + 24 * 3600 * 1000).toISOString();
-      }
+      if (dateVal) dueIso = new Date(`${dateVal}T${timeVal}:00`).toISOString();
+      else dueIso = new Date(Date.now() + 24 * 3600 * 1000).toISOString();
 
       const newTask = {
         id: 'task-' + Date.now(),
@@ -545,6 +686,8 @@
       currentTasksList.unshift(newTask);
       renderTasks();
       await saveCloudTasks(currentTasksList);
+
+      triggerPushNotification(`تم نشر ${newTask.type} جديد`, `${newTask.course}: ${newTask.title}`);
 
       btn.innerText = 'نشر التنبيه';
       btn.disabled = false;
@@ -601,34 +744,19 @@
       currentType = typeName;
     }
 
-    function switchDevice(type) {
-      const tabA = document.getElementById('tabApple');
-      const tabB = document.getElementById('tabAndroid');
-      const appI = document.getElementById('appleInstructions');
-      const andI = document.getElementById('androidInstructions');
-
-      if (type === 'apple') {
-        tabA.classList.add('active');
-        tabB.classList.remove('active');
-        appI.style.display = 'block';
-        andI.style.display = 'none';
-      } else {
-        tabB.classList.add('active');
-        tabA.classList.remove('active');
-        andI.style.display = 'block';
-        appI.style.display = 'none';
-      }
-    }
-
     function openAddModal() { document.getElementById('alertModal').style.display = 'flex'; }
     function closeAddModal() { document.getElementById('alertModal').style.display = 'none'; }
-    function openInstructionsModal() { document.getElementById('instructionsModal').style.display = 'flex'; }
-    function closeInstructionsModal() { document.getElementById('instructionsModal').style.display = 'none'; }
 
     window.addEventListener('DOMContentLoaded', () => {
       const today = new Date().toISOString().split('T')[0];
       const dateInp = document.getElementById('taskDateInput');
       if (dateInp) dateInp.value = today;
+
+      if (isNotificationEnabled()) {
+        const bell = document.getElementById('bellBtn');
+        if (bell) bell.classList.add('active-bell');
+      }
+
       fetchCloudTasks();
     });
   </script>
