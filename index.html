@@ -68,7 +68,6 @@
     .banner-left-actions a { font-size: 13.5px; font-weight: 800; color: #111; text-decoration: underline; cursor: pointer; }
     .banner-left-actions .close-x { background: none; border: none; font-size: 15px; color: #777; cursor: pointer; }
 
-    /* بطاقات الواجبات */
     .active-card { background: var(--card-active-bg); border-radius: 20px; padding: 16px 18px; margin-bottom: 14px; border: 1px solid #dce8fa; position: relative; transition: all 0.25s ease; }
     .active-card.completed { background: #fcfcfc; border-color: #e5e7eb; opacity: 0.75; }
     .active-card.completed .task-title { text-decoration: line-through; color: #6b7280; }
@@ -104,21 +103,21 @@
     .task-title { font-size: 17px; font-weight: 800; color: #111; margin-top: 2px; }
     .task-desc { font-size: 12.5px; color: #4b5563; line-height: 1.4; margin-top: 4px; }
     
-    /* رابط الملف المرفق */
     .attachment-btn {
       display: inline-flex;
       align-items: center;
       gap: 6px;
       background: #eef2ff;
-      color: #2563eb;
+      color: #1d4ed8;
       border: 1px solid #bfdbfe;
-      padding: 5px 10px;
-      border-radius: 8px;
+      padding: 6px 12px;
+      border-radius: 10px;
       font-size: 12px;
       font-weight: 700;
       text-decoration: none;
-      margin-top: 6px;
+      margin-top: 8px;
       width: fit-content;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
     }
 
     .author-line { font-size: 12px; color: #888; display: flex; align-items: center; gap: 6px; margin-top: 4px; }
@@ -133,7 +132,6 @@
     .btn-delete-task { background: none; border: none; color: #b91c1c; font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 4px; cursor: pointer; padding: 3px 6px; border-radius: 6px; }
     .expand-arrow { font-size: 13px; color: #8e8e93; cursor: pointer; }
 
-    /* الأرشيف */
     .archive-header-row { display: flex; align-items: center; gap: 8px; margin-top: 26px; margin-bottom: 14px; cursor: pointer; color: #374151; font-weight: 700; font-size: 13px; user-select: none; }
     .archive-header-row .arrow-icon { font-size: 12px; color: #6b7280; transition: transform 0.2s ease; }
     .archive-container { display: flex; flex-direction: column; gap: 12px; }
@@ -147,7 +145,6 @@
     .floating-btn-wrap { position: fixed; bottom: 24px; left: 0; right: 0; max-width: 480px; margin: 0 auto; padding: 0 16px; z-index: 50; }
     .btn-add-alert { width: 100%; background: var(--primary-green); color: white; border: none; border-radius: 16px; padding: 16px; font-size: 16px; font-weight: 700; box-shadow: 0 8px 20px rgba(23, 56, 43, 0.28); cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; }
 
-    /* النوافذ المنبثقة */
     .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: flex-end; }
     .modal-sheet { background: var(--bg-cream); width: 100%; max-height: 90vh; overflow-y: auto; border-radius: 28px 28px 0 0; padding: 22px 20px 36px; box-shadow: 0 -8px 30px rgba(0,0,0,0.2); }
     .sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
@@ -180,6 +177,26 @@
     .custom-textarea { resize: none; height: 75px; }
     .datetime-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .sub-hint { font-size: 11px; color: #8c897f; margin-top: 4px; display: block; }
+
+    /* حقل رفع الملف المباشر */
+    .file-upload-box {
+      border: 1.5px dashed #b9c3d0;
+      border-radius: 14px;
+      padding: 14px;
+      background: #fbf9f4;
+      text-align: center;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+    .file-upload-box:active { background: #f0ece1; }
+    .file-upload-icon { font-size: 22px; }
+    .file-upload-text { font-size: 13px; font-weight: 700; color: #374151; }
+    .file-upload-sub { font-size: 11px; color: #888; }
+    .selected-filename { font-size: 12px; color: #047857; font-weight: 700; margin-top: 4px; display: none; word-break: break-all; }
+
     .btn-submit-post { width: 100%; background: var(--primary-green); color: white; border: none; border-radius: 16px; padding: 16px; font-size: 16px; font-weight: 800; cursor: pointer; margin-top: 14px; box-shadow: 0 4px 12px rgba(23, 56, 43, 0.25); }
     .btn-toggle-notif { width: 100%; background: #ece7dc; color: #374151; border: none; border-radius: 14px; padding: 13px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 20px; }
   </style>
@@ -305,7 +322,7 @@
     </div>
   </div>
 
-  <!-- نافذة تأكيد الحذف المحمية بالرمز -->
+  <!-- نافذة الحذف المحمية بالرمز -->
   <div class="modal-overlay" id="confirmModal" style="display:none; align-items:center; justify-content:center;">
     <div class="confirm-box">
       <div style="font-size:36px; margin-bottom:10px;">⚠️</div>
@@ -319,7 +336,7 @@
     </div>
   </div>
 
-  <!-- نافذة إضافة تنبيه مع خانة إرفاق ملف PDF ورمز الإدمن -->
+  <!-- نافذة إضافة تنبيه مع دعم رفع الملف المباشر -->
   <div class="modal-overlay" id="alertModal">
     <div class="modal-sheet">
       <div class="sheet-header">
@@ -367,9 +384,21 @@
         <textarea class="custom-textarea" id="taskDescInput" placeholder="أي تفاصيل أو ملاحظات تفيد الشعبة..."></textarea>
       </div>
 
-      <!-- خانة رابط ملف PDF أو التكليف -->
+      <!-- رفع ملف مباشر من الجوال -->
       <div class="form-group">
-        <label>رابط ملف التكليف / PDF (اختياري)</label>
+        <label>إرفاق ملف التكليف (PDF أو صورة من جهازك)</label>
+        <input type="file" id="localFileInput" accept=".pdf,image/*" style="display:none" onchange="handleFileSelect(this)">
+        <div class="file-upload-box" onclick="document.getElementById('localFileInput').click()">
+          <span class="file-upload-icon">📎</span>
+          <span class="file-upload-text">اضغط لاختيار ملف من جهازك</span>
+          <span class="file-upload-sub">يدعم PDF والصور حتى 3 ميغابايت</span>
+          <div class="selected-filename" id="selectedFileName"></div>
+        </div>
+      </div>
+
+      <!-- خانة الرابط البديل (اختياري) -->
+      <div class="form-group">
+        <label>أو ضع رابط خارجي إن وجد (اختياري)</label>
         <input type="url" class="custom-input" id="taskFileInput" placeholder="https://... رابط دراسة الحالة أو الملف">
       </div>
 
@@ -382,7 +411,6 @@
         <span class="sub-hint">بتوقيت السعودية</span>
       </div>
 
-      <!-- خانة رمز الإدمن -->
       <div class="form-group" style="margin-top: 10px;">
         <label>رمز الإدمن (PIN)</label>
         <input type="password" class="custom-input" id="adminPinInput" placeholder="أدخل الرمز للنشر" style="text-align: center; letter-spacing: 3px;">
@@ -393,9 +421,7 @@
   </div>
 
   <script>
-    // رمز الأمان للإدمن (يمكنك تغييره لأي رمز تريده)
     const ADMIN_PIN = "1234";
-
     const DB_URL = "https://pm2-6f219-default-rtdb.firebaseio.com/tasks.json";
 
     let currentTasksList = [];
@@ -403,6 +429,30 @@
     let itemToDelete = null;
     let knownTaskIds = new Set();
     let isFirstLoad = true;
+    let uploadedBase64File = "";
+
+    // معالجة اختيار الملف من الجوال
+    function handleFileSelect(input) {
+      const file = input.files[0];
+      const nameEl = document.getElementById('selectedFileName');
+      if (!file) return;
+
+      if (file.size > 3.5 * 1024 * 1024) {
+        alert("حجم الملف أكبر من 3 ميغابايت! يرجى اختيار ملف أصغر أو وضع رابطه.");
+        input.value = "";
+        uploadedBase64File = "";
+        nameEl.style.display = "none";
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        uploadedBase64File = e.target.result;
+        nameEl.innerText = `✓ تم اختيار: ${file.name} (${Math.round(file.size/1024)} كيلوبايت)`;
+        nameEl.style.display = "block";
+      };
+      reader.readAsDataURL(file);
+    }
 
     function getCompletedTaskIds() {
       try {
@@ -424,14 +474,13 @@
       renderTasks();
     }
 
-    // تصدير الواجب كحدث لتقويم الجوال (.ics)
     function addToCalendar(id, title, course, dueDateStr) {
       if (!dueDateStr) {
         alert("لا يوجد موعد محدد لهذا التكليف.");
         return;
       }
       const dueDate = new Date(dueDateStr);
-      const startDate = new Date(dueDate.getTime() - 60 * 60 * 1000); // قبلها بساعة
+      const startDate = new Date(dueDate.getTime() - 60 * 60 * 1000);
 
       const formatICSDate = (d) => {
         return d.toISOString().replace(/-|:|\.\d+/g, "");
@@ -685,6 +734,7 @@
         else if (t.type === 'إعلان') badgeColorClass = 'badge-amber';
 
         const isDone = completedSet.has(t.id);
+        const fileTarget = t.fileData || t.fileUrl;
 
         const card = document.createElement('div');
         card.className = `active-card ${isDone ? 'completed' : ''}`;
@@ -704,7 +754,7 @@
             <div class="card-right-info">
               <div class="task-title">${t.title}</div>
               ${t.desc ? `<div class="task-desc">${t.desc}</div>` : ''}
-              ${t.fileUrl ? `<a href="${t.fileUrl}" target="_blank" class="attachment-btn">📄 فتح الملف / الرابط</a>` : ''}
+              ${fileTarget ? `<a href="${fileTarget}" target="_blank" download="${t.title}" class="attachment-btn">📄 فتح / تحميل الملف المرفق</a>` : ''}
               <div class="author-line">
                 <span>بواسطة ${t.author || 'الشعبة'}</span>
                 <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
@@ -739,6 +789,8 @@
         else if (t.type === 'اختبار') badgeColorClass = 'badge-purple';
         else if (t.type === 'إعلان') badgeColorClass = 'badge-amber';
 
+        const fileTarget = t.fileData || t.fileUrl;
+
         const card = document.createElement('div');
         card.className = 'archive-card';
         card.style.marginBottom = '12px';
@@ -750,7 +802,7 @@
                 <span class="subject-title">${t.course}</span>
               </div>
               <div class="task-title">${t.title}</div>
-              ${t.fileUrl ? `<a href="${t.fileUrl}" target="_blank" class="attachment-btn">📄 فتح الملف / الرابط</a>` : ''}
+              ${fileTarget ? `<a href="${fileTarget}" target="_blank" download="${t.title}" class="attachment-btn">📄 فتح / تحميل الملف المرفق</a>` : ''}
               <div class="author-line">بواسطة ${t.author || 'الشعبة'}</div>
             </div>
             <div class="card-left-time">
@@ -834,7 +886,7 @@
       if (!course) { alert('يرجى اختيار المادة'); return; }
       if (!title) { alert('يرجى كتابة عنوان التكليف'); return; }
 
-      btn.innerText = 'جاري النشر للجميع...';
+      btn.innerText = 'جاري النشر والمزامنة...';
       btn.disabled = true;
 
       let dueIso = '';
@@ -848,6 +900,7 @@
         title: title,
         desc: desc,
         fileUrl: fileUrl,
+        fileData: uploadedBase64File || '', // الملف المرفق من الجوال
         author: author,
         dueDate: dueIso
       };
@@ -863,6 +916,9 @@
       document.getElementById('taskTitleInput').value = '';
       document.getElementById('taskDescInput').value = '';
       document.getElementById('taskFileInput').value = '';
+      document.getElementById('localFileInput').value = '';
+      document.getElementById('selectedFileName').style.display = 'none';
+      uploadedBase64File = '';
       document.getElementById('adminPinInput').value = '';
       closeAddModal();
     }
