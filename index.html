@@ -2,106 +2,201 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>دبلوم عالي إدارة المشاريع | PM2 - NBU</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>دبلوم عالي إدارة المشاريع | الشعبة الثانية</title>
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg-color: #f7f4ed;
-      --card-bg: #ffffff;
-      --primary-green: #1b3d2f;
-      --tag-blue: #2354a8;
-      --tag-green: #2e8b74;
-      --text-main: #222222;
-      --text-muted: #7b7b7b;
-      --danger: #cf4125;
+      --card-bg: #f4f8ff;
+      --card-white: #ffffff;
+      --primary-dark: #17382b;
+      --accent-blue: #1c52b5;
+      --accent-teal: #2a8a72;
+      --text-dark: #1f2937;
+      --text-muted: #737b88;
+      --danger: #cf4324;
+      --border-color: #e5ebf5;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
-    body { background-color: var(--bg-color); color: var(--text-main); padding: 20px 16px 100px; max-width: 480px; margin: 0 auto; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background-color: var(--bg-color); color: var(--text-dark); padding: 18px 16px 110px; max-width: 480px; margin: 0 auto; min-height: 100vh; position: relative; }
 
-    .header { text-align: center; margin-bottom: 24px; position: relative; }
-    .sub-title { font-size: 13px; color: var(--text-muted); margin-bottom: 4px; font-weight: 500; }
-    .main-title { font-size: 26px; font-weight: 800; color: var(--primary-green); }
+    /* الهيدر العلوي */
+    .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
+    .top-actions { display: flex; align-items: center; gap: 8px; }
+    .icon-btn { width: 38px; height: 38px; border-radius: 50%; background: #eae6dd; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #444; }
+    .view-toggle { display: flex; background: #eae6dd; padding: 3px; border-radius: 20px; }
+    .view-toggle button { border: none; background: transparent; padding: 5px 8px; border-radius: 16px; cursor: pointer; color: #666; display: flex; align-items: center; justify-content: center; }
+    .view-toggle button.active { background: var(--primary-dark); color: white; }
 
-    .section-title { font-size: 15px; font-weight: 700; margin-bottom: 12px; color: #333; }
+    .header-info { display: flex; align-items: center; gap: 10px; }
+    .header-text { text-align: left; }
+    .sub-title { font-size: 11px; color: var(--text-muted); font-weight: 700; }
+    .main-title { font-size: 21px; font-weight: 800; color: var(--primary-dark); line-height: 1.2; }
+    .uni-logo { width: 44px; height: 44px; border-radius: 50%; background: #e8eee6; padding: 3px; border: 1.5px solid #d4dfd0; object-fit: contain; }
 
-    .card { background: var(--card-bg); border-radius: 18px; padding: 16px 18px; margin-bottom: 14px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03); display: flex; justify-content: space-between; align-items: flex-start; border: 1px solid rgba(0,0,0,0.04); }
-    .card-right { display: flex; flex-direction: column; gap: 6px; }
-    .card-tags { display: flex; gap: 8px; align-items: center; }
-    .badge { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; color: white; }
-    .badge-blue { background-color: var(--tag-blue); }
-    .badge-teal { background-color: var(--tag-green); }
+    .section-counter { font-size: 13px; font-weight: 700; color: #4b5563; margin-bottom: 12px; margin-top: 6px; }
 
-    .course-name { font-size: 13px; color: var(--text-muted); }
-    .card-title { font-size: 17px; font-weight: 800; color: var(--text-main); }
-    .author { font-size: 12px; color: #999; }
+    /* بطاقات المهام النشطة */
+    .card-active {
+      background: var(--card-bg);
+      border-radius: 22px;
+      padding: 16px 18px;
+      margin-bottom: 16px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 4px 12px rgba(28, 82, 181, 0.04);
+    }
+    .card-top { display: flex; justify-content: space-between; align-items: flex-start; }
+    .card-badges-group { display: flex; align-items: center; gap: 6px; justify-content: flex-end; }
+    .badge { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 14px; color: white; }
+    .badge-blue { background-color: var(--accent-blue); }
+    .badge-teal { background-color: var(--accent-teal); }
+    .subject-title { font-size: 12px; color: var(--text-muted); font-weight: 700; }
 
-    .card-left { text-align: left; min-width: 90px; }
-    .card-left .status-label { font-size: 11px; font-weight: 700; color: var(--danger); margin-bottom: 2px; }
-    .countdown { font-size: 13px; font-weight: 800; color: var(--danger); direction: ltr; }
-    .status-ended { font-size: 12px; font-weight: 700; color: #888; }
-    .time-ended { font-size: 11px; color: #bbb; margin-top: 2px; }
+    .card-body { margin-top: 4px; }
+    .task-heading { font-size: 18px; font-weight: 800; color: #111; }
+    .meta-row { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); margin-top: 6px; }
 
-    .archive-header { display: flex; justify-content: space-between; align-items: center; margin-top: 28px; margin-bottom: 12px; cursor: pointer; color: var(--text-muted); font-weight: 700; font-size: 14px; }
-    .footer-action { position: fixed; bottom: 20px; left: 0; right: 0; max-width: 480px; margin: 0 auto; padding: 0 16px; }
-    .add-btn { width: 100%; background: var(--primary-green); color: white; border: none; border-radius: 14px; padding: 15px; font-size: 16px; font-weight: 700; box-shadow: 0 6px 16px rgba(27, 61, 47, 0.25); cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; }
+    .timer-side { text-align: left; min-width: 95px; }
+    .timer-side .tag-closest { font-size: 11px; font-weight: 800; color: var(--danger); margin-bottom: 2px; }
+    .timer-side .timer-digits { font-size: 14px; font-weight: 800; color: var(--danger); }
+    .timer-side .clock-sub { font-size: 11px; color: #888; font-family: monospace; font-weight: 600; margin-top: 1px; }
+
+    .arrow-down { font-size: 14px; color: #8898aa; cursor: pointer; margin-top: 8px; display: inline-block; }
+
+    /* قسم الأرشيف */
+    .archive-bar { display: flex; align-items: center; gap: 6px; margin-top: 24px; margin-bottom: 12px; cursor: pointer; color: #374151; font-weight: 700; font-size: 13px; }
+    .archive-bar span.icon { font-size: 11px; color: #6b7280; }
+
+    /* روابط الفوتر الإدارية */
+    .admin-links { text-align: center; margin-top: 36px; font-size: 13px; color: #71717a; font-weight: 600; display: flex; justify-content: center; gap: 14px; }
+    .admin-links a { color: #71717a; text-decoration: none; }
+
+    /* زر إضافة تنبيه */
+    .btn-fixed-wrap { position: fixed; bottom: 20px; left: 0; right: 0; max-width: 480px; margin: 0 auto; padding: 0 16px; }
+    .btn-primary-add { width: 100%; background: var(--primary-dark); color: white; border: none; border-radius: 16px; padding: 16px; font-size: 16px; font-weight: 700; box-shadow: 0 8px 20px rgba(23, 56, 43, 0.3); cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; }
+
+    /* المودال (النافذة المنبثقة) */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 1000; align-items: flex-end; }
+    .modal-sheet { background: white; width: 100%; border-radius: 24px 24px 0 0; padding: 24px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 -4px 25px rgba(0,0,0,0.15); }
+    .modal-sheet input, .modal-sheet select { padding: 13px; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 14px; width: 100%; font-family: inherit; }
+    .btn-confirm { background: var(--primary-dark); color: white; padding: 14px; border: none; border-radius: 12px; font-weight: 700; font-size: 15px; cursor: pointer; }
   </style>
 </head>
 <body>
 
-  <!-- الترويسة -->
-  <header class="header">
-    <div class="sub-title">جامعة الحدود الشمالية | دبلوم عالي إدارة المشاريع</div>
-    <div class="main-title">المجموعة الثانية (PM2)</div>
-  </header>
+  <!-- الهيدر العلوي -->
+  <div class="top-bar">
+    <div class="top-actions">
+      <button class="icon-btn" title="التنبيهات">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+      </button>
+      <div class="view-toggle">
+        <button title="شبكة">
+          <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M4 4h4v4H4V4zm6 0h4v4h-4V4zm6 0h4v4h-4V4zM4 10h4v4H4v-4zm6 0h4v4h-4v-4zm6 0h4v4h-4v-4zM4 16h4v4H4v-4zm6 0h4v4h-4v-4zm6 0h4v4h-4v-4z"/></svg>
+        </button>
+        <button class="active" title="قائمة">
+          <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M4 6h16v2H4V6zm0 5h16v2H4v-2zm0 5h16v2H4v-2z"/></svg>
+        </button>
+      </div>
+    </div>
 
-  <!-- التكليفات القادمة -->
-  <div class="section-title">واجب نشط</div>
-  <div id="active-tasks">
-    <div class="card">
-      <div class="card-right">
-        <div class="card-tags">
-          <span class="badge badge-blue">واجب</span>
-          <span class="course-name">إدارة المشاريع التنموية</span>
-        </div>
-        <div class="card-title">واجب 1</div>
-        <div class="author">بواسطة: منسق الشعبة</div>
+    <div class="header-info">
+      <div class="header-text">
+        <div class="sub-title">دبلوم عالي إدارة المشاريع</div>
+        <div class="main-title">الشعبة الثانية</div>
       </div>
-      <div class="card-left">
-        <div class="status-label">الأقرب</div>
-        <div class="countdown">باقي 12 ساعة</div>
-      </div>
+      <!-- شعار جامعة الحدود الشمالية الدائري -->
+      <img src="https://upload.wikimedia.org/wikipedia/ar/2/29/NBU_Logo.png" alt="شعار جامعة الحدود الشمالية" class="uni-logo" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3135/3135810.png'">
     </div>
   </div>
 
-  <!-- الأرشيف -->
-  <div class="archive-header">
-    <span>المنتهية والأرشيف (2)</span>
-    <span>⌄</span>
-  </div>
+  <div class="section-counter">واجب واحد</div>
 
-  <div id="archived-tasks">
-    <div class="card" style="opacity: 0.85;">
-      <div class="card-right">
-        <div class="card-tags">
-          <span class="badge badge-teal">مناقشة</span>
-          <span class="course-name">دراسات الجدوى وتقييم المشاريع</span>
+  <!-- حاوية المهام النشطة -->
+  <div id="tasksContainer">
+    <div class="card-active">
+      <div class="card-top">
+        <div class="timer-side">
+          <div class="tag-closest">الأقرب</div>
+          <div class="timer-digits">باقي 9 ساعات</div>
+          <div class="clock-sub" id="clockCount">08:39:15</div>
         </div>
-        <div class="card-title">مناقشة تفاعلية</div>
-        <div class="author">بواسطة: منسق الشعبة</div>
+        <div>
+          <div class="card-badges-group">
+            <span class="subject-title">الإدارة الإلكترونية للمشاريع</span>
+            <span class="badge badge-blue">واجب</span>
+          </div>
+          <div class="card-body">
+            <div class="task-heading">واجب</div>
+            <div class="meta-row">
+              <span>بواسطة سالم الشمري</span>
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="card-left">
-        <div class="status-ended">انتهى</div>
-        <div class="time-ended">أمس 11:59 م</div>
-      </div>
+      <div class="arrow-down">⌄</div>
     </div>
   </div>
 
-  <!-- زر إضافة تنبيه بالأسفل -->
-  <div class="footer-action">
-    <button class="add-btn">+ إضافة تنبيه</button>
+  <!-- المنتهية والأرشيف -->
+  <div class="archive-bar">
+    <span class="icon">⌄</span>
+    <span>المنتهية والأرشيف (6)</span>
   </div>
 
+  <!-- روابط الإشعارات والإدمن في الأسفل -->
+  <div class="admin-links">
+    <a href="javascript:void(0)" onclick="alert('صفحة الإدمن')">الإدمن</a>
+    <span>•</span>
+    <a href="javascript:void(0)" onclick="alert('الإشعارات مفعلة')">الإشعارات</a>
+  </div>
+
+  <!-- زر إضافة تنبيه الثابت -->
+  <div class="btn-fixed-wrap">
+    <button class="btn-primary-add" onclick="openModal()">+ إضافة تنبيه</button>
+  </div>
+
+  <!-- نافذة إضافة تنبيه -->
+  <div class="modal-overlay" id="addModal">
+    <div class="modal-sheet">
+      <h3 style="font-size:17px; font-weight:800; color:var(--primary-dark);">إضافة تكليف جديد للشعبة</h3>
+      <input type="text" id="courseName" placeholder="اسم المادة (مثال: إدارة الموارد)">
+      <input type="text" id="taskName" placeholder="العنوان (مثال: واجب 1 / مناقشة)">
+      <select id="taskBadge">
+        <option value="واجب">واجب</option>
+        <option value="مناقشة">مناقشة</option>
+        <option value="اختبار">اختبار</option>
+      </select>
+      <input type="text" id="authorName" placeholder="المعد (مثال: سالم الشمري)">
+      <button class="btn-confirm" onclick="saveTask()">حفظ التكليف</button>
+      <button onclick="closeModal()" style="border:none; background:transparent; color:#888; padding:8px;">إلغاء</button>
+    </div>
+  </div>
+
+  <script>
+    // تشغيل العداد التنازلي المباشر بالثواني
+    let sec = 15, min = 39, hrs = 8;
+    setInterval(() => {
+      if (sec > 0) sec--;
+      else {
+        sec = 59;
+        if (min > 0) min--;
+        else { min = 59; if (hrs > 0) hrs--; }
+      }
+      const f = (n) => String(n).padStart(2, '0');
+      const el = document.getElementById('clockCount');
+      if (el) el.innerText = `${f(hrs)}:${f(min)}:${f(sec)}`;
+    }, 1000);
+
+    function openModal() { document.getElementById('addModal').style.display = 'flex'; }
+    function closeModal() { document.getElementById('addModal').style.display = 'none'; }
+    function saveTask() {
+      alert("تمت الإضافة بنجاح!");
+      closeModal();
+    }
+  </script>
 </body>
 </html>
