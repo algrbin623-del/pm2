@@ -26,6 +26,7 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; -webkit-tap-highlight-color: transparent; }
     body { background-color: var(--bg-cream); color: var(--text-main); padding: 16px 16px 120px; max-width: 480px; margin: 0 auto; min-height: 100vh; direction: rtl; }
 
+    /* الهيدر العلوي */
     .top-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
     .header-right { display: flex; align-items: center; gap: 12px; text-align: right; }
     .logo-box { width: 46px; height: 46px; background: #e8e3d5; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; padding: 3px; }
@@ -40,6 +41,7 @@
 
     .section-label { font-size: 13.5px; font-weight: 700; color: #444; margin-bottom: 12px; text-align: right; }
 
+    /* بانر الإشعارات */
     .banner-pwa { background: white; border-radius: 18px; padding: 14px 18px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 4px rgba(0,0,0,0.03); }
     .banner-right-content { display: flex; align-items: center; gap: 12px; text-align: right; }
     .banner-right-content .bell-icon { font-size: 20px; color: #222; }
@@ -48,6 +50,7 @@
     .banner-left-actions a { font-size: 13.5px; font-weight: 800; color: #111; text-decoration: underline; cursor: pointer; }
     .banner-left-actions .close-x { background: none; border: none; font-size: 15px; color: #777; cursor: pointer; }
 
+    /* بطاقة التكليف النشط */
     .active-card { background: var(--card-active-bg); border-radius: 20px; padding: 16px 18px; margin-bottom: 14px; border: 1px solid #dce8fa; }
     .card-flex { display: flex; justify-content: space-between; align-items: flex-start; }
     .card-right-info { text-align: right; display: flex; flex-direction: column; gap: 6px; flex: 1; padding-left: 10px; }
@@ -59,6 +62,7 @@
     .badge-amber { background-color: var(--accent-amber); }
     .subject-title { font-size: 12.5px; color: var(--text-muted); font-weight: 600; }
     .task-title { font-size: 17px; font-weight: 800; color: #111; margin-top: 2px; }
+    .task-desc { font-size: 12.5px; color: #4b5563; line-height: 1.4; margin-top: 4px; }
     .author-line { font-size: 12px; color: #888; display: flex; align-items: center; gap: 6px; margin-top: 4px; }
     .card-left-time { text-align: left; min-width: 95px; flex-shrink: 0; }
     .label-near { font-size: 11.5px; font-weight: 800; color: var(--danger); text-align: left; }
@@ -69,6 +73,7 @@
     .btn-delete-task { background: none; border: none; color: #b91c1c; font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 4px; cursor: pointer; padding: 3px 6px; border-radius: 6px; }
     .expand-arrow { font-size: 13px; color: #8e8e93; cursor: pointer; }
 
+    /* الأرشيف */
     .archive-header-row { display: flex; align-items: center; gap: 8px; margin-top: 26px; margin-bottom: 14px; cursor: pointer; color: #374151; font-weight: 700; font-size: 13px; user-select: none; }
     .archive-header-row .arrow-icon { font-size: 12px; color: #6b7280; transition: transform 0.2s ease; }
     .archive-container { display: flex; flex-direction: column; gap: 12px; }
@@ -76,12 +81,15 @@
     .status-ended { font-size: 12px; font-weight: 700; color: #888; text-align: left; }
     .ended-time { font-size: 11px; color: #aaa; margin-top: 2px; text-align: left; }
 
+    /* الفوتر */
     .footer-admin-links { display: flex; justify-content: center; gap: 16px; font-size: 13px; color: #71717a; font-weight: 600; margin-top: 40px; }
     .footer-admin-links a { color: #71717a; text-decoration: none; cursor: pointer; }
 
+    /* زر إضافة تنبيه */
     .floating-btn-wrap { position: fixed; bottom: 24px; left: 0; right: 0; max-width: 480px; margin: 0 auto; padding: 0 16px; z-index: 50; }
     .btn-add-alert { width: 100%; background: var(--primary-green); color: white; border: none; border-radius: 16px; padding: 16px; font-size: 16px; font-weight: 700; box-shadow: 0 8px 20px rgba(23, 56, 43, 0.28); cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; }
 
+    /* النوافذ المنبثقة */
     .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: flex-end; }
     .modal-sheet { background: var(--bg-cream); width: 100%; max-height: 92vh; overflow-y: auto; border-radius: 28px 28px 0 0; padding: 22px 20px 32px; box-shadow: 0 -8px 30px rgba(0,0,0,0.2); }
     .sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
@@ -113,6 +121,7 @@
 </head>
 <body>
 
+  <!-- الهيدر العلوي -->
   <header class="top-header">
     <div class="header-right">
       <div class="logo-box" title="جامعة الحدود الشمالية">
@@ -148,8 +157,10 @@
     </div>
   </header>
 
+  <!-- عداد المهام النشطة -->
   <div class="section-label" id="activeCounterText">4 واجبات</div>
 
+  <!-- بانر الإشعارات -->
   <div class="banner-pwa" id="iosBanner">
     <div class="banner-right-content">
       <span class="bell-icon">🔔</span>
@@ -161,10 +172,10 @@
     </div>
   </div>
 
-  <!-- قائمة الواجبات النشطة المشتركة -->
+  <!-- قائمة الواجبات النشطة -->
   <div id="tasksList"></div>
 
-  <!-- الأرشيف -->
+  <!-- الأرشيف (1 تكليف فقط) -->
   <div class="archive-header-row" onclick="toggleArchive()">
     <span class="arrow-icon" id="archiveArrow">⌄</span>
     <span id="archiveTitleText">المنتهية والأرشيف (1)</span>
@@ -195,16 +206,19 @@
     </div>
   </div>
 
+  <!-- الفوتر -->
   <div class="footer-admin-links">
     <a href="javascript:void(0)" onclick="openInstructionsModal()">الإشعارات</a>
     <span>•</span>
     <a href="javascript:void(0)" onclick="openAddModal()">الإدمن</a>
   </div>
 
+  <!-- زر إضافة تنبيه -->
   <div class="floating-btn-wrap">
     <button class="btn-add-alert" onclick="openAddModal()">+ إضافة تنبيه</button>
   </div>
 
+  <!-- نافذة تعليمات التثبيت -->
   <div class="modal-overlay" id="instructionsModal">
     <div class="modal-sheet">
       <div class="sheet-header">
@@ -241,11 +255,12 @@
     </div>
   </div>
 
+  <!-- نافذة تأكيد الحذف -->
   <div class="modal-overlay" id="confirmModal" style="display:none; align-items:center; justify-content:center;">
     <div class="confirm-box">
       <div style="font-size:36px; margin-bottom:10px;">⚠️</div>
       <div class="confirm-title">تأكيد الحذف</div>
-      <div class="confirm-desc" id="confirmMessageText">هل أنت متأكد من حذف هذا التكليف؟</div>
+      <div class="confirm-desc" id="confirmMessageText">هل أنت متأكد من رغبتك في حذف هذا التكليف؟</div>
       <div class="confirm-actions">
         <button class="btn-action-del" onclick="executeDelete()">نعم، احذف</button>
         <button class="btn-action-cancel" onclick="closeConfirmModal()">إلغاء</button>
@@ -253,6 +268,7 @@
     </div>
   </div>
 
+  <!-- نافذة إضافة تنبيه -->
   <div class="modal-overlay" id="alertModal">
     <div class="modal-sheet">
       <div class="sheet-header">
@@ -309,8 +325,7 @@
   </div>
 
   <script>
-    // القائمة العامة المركزية التي تظهر لجميع الطلاب في كل المتصفحات
-    const publicSharedTasks = [
+    const defaultTasks = [
       {
         id: 'task-1',
         type: 'واجب',
@@ -353,8 +368,13 @@
     let itemToDelete = null;
 
     function getTasks() {
-      // إرجاع القائمة العامة المركزية
-      return publicSharedTasks;
+      const data = localStorage.getItem('pm2_tasks_data_v2');
+      return data ? JSON.parse(data) : defaultTasks;
+    }
+
+    function saveTasks(tasks) {
+      localStorage.setItem('pm2_tasks_data_v2', JSON.stringify(tasks));
+      renderTasks();
     }
 
     function renderTasks() {
@@ -459,8 +479,47 @@
 
     setInterval(updateAllTimers, 1000);
 
+    // دالة النشر المحدثة: تنشئ المهمة وتضيفها مباشرة
     function handlePublish() {
-      alert("لإضافة تكليف يظهر لجميع الطلاب في كافة المتصفحات، يمكنك نسخ الكود أو نربطه بقاعدة بيانات سحابية.");
+      const course = document.getElementById('courseSelect').value.trim();
+      const title = document.getElementById('taskTitleInput').value.trim();
+      const desc = document.getElementById('taskDescInput').value.trim();
+      const dateVal = document.getElementById('taskDateInput').value;
+      const timeVal = document.getElementById('taskTimeInput').value || '23:59';
+
+      if (!course) {
+        alert('يرجى اختيار المادة');
+        return;
+      }
+      if (!title) {
+        alert('يرجى كتابة عنوان التكليف');
+        return;
+      }
+
+      let dueIso = '';
+      if (dateVal) {
+        dueIso = new Date(`${dateVal}T${timeVal}:00`).toISOString();
+      } else {
+        dueIso = new Date(Date.now() + 24 * 3600 * 1000).toISOString();
+      }
+
+      const newTask = {
+        id: 'task-' + Date.now(),
+        type: currentType,
+        course: course,
+        title: title,
+        desc: desc,
+        author: 'سالم الشمري',
+        dueDate: dueIso
+      };
+
+      const tasks = getTasks();
+      tasks.unshift(newTask);
+      saveTasks(tasks);
+
+      // تفريغ الحقول وإغلاق النافذة
+      document.getElementById('taskTitleInput').value = '';
+      document.getElementById('taskDescInput').value = '';
       closeAddModal();
     }
 
@@ -478,11 +537,14 @@
     function executeDelete() {
       if (!itemToDelete) return;
 
-      const target = document.getElementById(`card-${itemToDelete}`) || document.getElementById(itemToDelete);
-      if (target) target.remove();
-
       if (itemToDelete === 'task-archive-static') {
+        const el = document.getElementById('task-archive-static');
+        if (el) el.remove();
         document.getElementById('archiveTitleText').innerText = 'المنتهية والأرشيف (0)';
+      } else {
+        let tasks = getTasks();
+        tasks = tasks.filter(t => t.id !== itemToDelete);
+        saveTasks(tasks);
       }
       closeConfirmModal();
     }
@@ -530,6 +592,9 @@
     function closeInstructionsModal() { document.getElementById('instructionsModal').style.display = 'none'; }
 
     window.addEventListener('DOMContentLoaded', () => {
+      const today = new Date().toISOString().split('T')[0];
+      const dateInp = document.getElementById('taskDateInput');
+      if (dateInp) dateInp.value = today;
       renderTasks();
     });
   </script>
