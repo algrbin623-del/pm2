@@ -158,7 +158,7 @@
   </header>
 
   <!-- عداد المهام النشطة -->
-  <div class="section-label" id="activeCounterText">4 واجبات</div>
+  <div class="section-label" id="activeCounterText">جاري تحميل التكليفات...</div>
 
   <!-- بانر الإشعارات -->
   <div class="banner-pwa" id="iosBanner">
@@ -172,7 +172,7 @@
     </div>
   </div>
 
-  <!-- قائمة الواجبات النشطة -->
+  <!-- قائمة الواجبات النشطة المشتركة -->
   <div id="tasksList"></div>
 
   <!-- الأرشيف (1 تكليف فقط) -->
@@ -260,9 +260,9 @@
     <div class="confirm-box">
       <div style="font-size:36px; margin-bottom:10px;">⚠️</div>
       <div class="confirm-title">تأكيد الحذف</div>
-      <div class="confirm-desc" id="confirmMessageText">هل أنت متأكد من رغبتك في حذف هذا التكليف؟</div>
+      <div class="confirm-desc" id="confirmMessageText">هل أنت متأكد من رغبتك في حذف هذا التكليف نهائياً؟</div>
       <div class="confirm-actions">
-        <button class="btn-action-del" onclick="executeDelete()">نعم، احذف</button>
+        <button class="btn-action-del" id="btnConfirmDelete" onclick="executeDelete()">نعم، احذف</button>
         <button class="btn-action-cancel" onclick="closeConfirmModal()">إلغاء</button>
       </div>
     </div>
@@ -320,12 +320,15 @@
         <span class="sub-hint">غير مطلوب لنوع «إعلان» · بتوقيت السعودية</span>
       </div>
 
-      <button type="button" class="btn-submit-post" onclick="handlePublish()">نشر التنبيه</button>
+      <button type="button" class="btn-submit-post" id="btnPublish" onclick="handlePublish()">نشر التنبيه</button>
     </div>
   </div>
 
   <script>
-    const defaultTasks = [
+    // رابط قاعدة بيانات Firebase الخاصة بك
+    const DB_URL = "https://pm2-6f219-default-rtdb.firebaseio.com/tasks.json";
+
+    const initialDefaultTasks = [
       {
         id: 'task-1',
         type: 'واجب',
@@ -364,36 +367,62 @@
       }
     ];
 
+    let currentTasksList = [];
     let currentType = 'واجب';
     let itemToDelete = null;
 
-    function getTasks() {
-      const data = localStorage.getItem('pm2_tasks_data_v2');
-      return data ? JSON.parse(data) : defaultTasks;
+    // جلب البيانات من السحابة لجميع المستخدمين
+    async function fetchCloudTasks() {
+      try {
+        const res = await fetch(DB_URL);
+        const data = await res.json();
+        if (data && Array.isArray(data)) {
+          currentTasksList = data;
+        } else if (data && typeof data === 'object') {
+          currentTasksList = Object.values(data);
+        } else {
+          // إذا كانت القاعدة جديدة وفارغة، نرفع المهام الافتراضية
+          currentTasksList = initialDefaultTasks;
+          await saveCloudTasks(currentTasksList);
+        }
+        renderTasks();
+      } catch (err) {
+        console.error("فشل الاتصال بقاعدة البيانات، جاري استخدام النسخة المحلية:", err);
+        currentTasksList = initialDefaultTasks;
+        renderTasks();
+      }
     }
 
-    function saveTasks(tasks) {
-      localStorage.setItem('pm2_tasks_data_v2', JSON.stringify(tasks));
-      renderTasks();
+    // حفظ البيانات في السحابة فوراً
+    async function saveCloudTasks(tasks) {
+      try {
+        await fetch(DB_URL, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(tasks)
+        });
+      } catch (err) {
+        console.error("خطأ أثناء الحفظ بالسحابة:", err);
+      }
     }
 
     function renderTasks() {
-      const tasks = getTasks();
       const container = document.getElementById('tasksList');
       const counter = document.getElementById('activeCounterText');
       container.innerHTML = '';
 
-      if (tasks.length === 0) {
+      if (!currentTasksList || currentTasksList.length === 0) {
         counter.innerText = 'لا توجد واجبات نشطة حالياً';
-        container.innerHTML = '<div style="text-align:center; padding:30px; color:#888; font-size:14px; background:white; border-radius:16px;">لا توجد أي تكليفات نشطة.</div>';
+        container.innerHTML = '<div style="text-align:center; padding:30px; color:#888; font-size:14px; background:white; border-radius:16px;">لا توجد أي تكليفات نشطة. اضغط بالأسفل لإضافة تنبيه جديد.</div>';
         return;
       }
 
-      if (tasks.length === 1) counter.innerText = 'واجب واحد';
-      else if (tasks.length === 2) counter.innerText = 'واجبان';
-      else counter.innerText = `${tasks.length} واجبات`;
+      const count = currentTasksList.length;
+      if (count === 1) counter.innerText = 'واجب واحد';
+      else if (count === 2) counter.innerText = 'واجبان';
+      else counter.innerText = `${count} واجبات`;
 
-      tasks.forEach((t) => {
+      currentTasksList.forEach((t) => {
         let badgeColorClass = 'badge-blue';
         if (t.type === 'مناقشة') badgeColorClass = 'badge-teal';
         else if (t.type === 'اختبار') badgeColorClass = 'badge-purple';
@@ -438,10 +467,9 @@
     }
 
     function updateAllTimers() {
-      const tasks = getTasks();
       const now = new Date().getTime();
 
-      tasks.forEach(t => {
+      currentTasksList.forEach(t => {
         if (!t.dueDate) return;
         const target = new Date(t.dueDate).getTime();
         const diff = target - now;
@@ -479,22 +507,23 @@
 
     setInterval(updateAllTimers, 1000);
 
-    // دالة النشر المحدثة: تنشئ المهمة وتضيفها مباشرة
-    function handlePublish() {
+    // تحديث دوري تلقائي كل 5 ثوانٍ ليتزامن كل جوال بالثواني مع التكليفات الجديدة
+    setInterval(fetchCloudTasks, 5000);
+
+    // نشر التكليف إلى السحابة فوراً
+    async function handlePublish() {
       const course = document.getElementById('courseSelect').value.trim();
       const title = document.getElementById('taskTitleInput').value.trim();
       const desc = document.getElementById('taskDescInput').value.trim();
       const dateVal = document.getElementById('taskDateInput').value;
       const timeVal = document.getElementById('taskTimeInput').value || '23:59';
+      const btn = document.getElementById('btnPublish');
 
-      if (!course) {
-        alert('يرجى اختيار المادة');
-        return;
-      }
-      if (!title) {
-        alert('يرجى كتابة عنوان التكليف');
-        return;
-      }
+      if (!course) { alert('يرجى اختيار المادة'); return; }
+      if (!title) { alert('يرجى كتابة عنوان التكليف'); return; }
+
+      btn.innerText = 'جاري النشر للجميع...';
+      btn.disabled = true;
 
       let dueIso = '';
       if (dateVal) {
@@ -513,11 +542,12 @@
         dueDate: dueIso
       };
 
-      const tasks = getTasks();
-      tasks.unshift(newTask);
-      saveTasks(tasks);
+      currentTasksList.unshift(newTask);
+      renderTasks();
+      await saveCloudTasks(currentTasksList);
 
-      // تفريغ الحقول وإغلاق النافذة
+      btn.innerText = 'نشر التنبيه';
+      btn.disabled = false;
       document.getElementById('taskTitleInput').value = '';
       document.getElementById('taskDescInput').value = '';
       closeAddModal();
@@ -534,18 +564,22 @@
       document.getElementById('confirmModal').style.display = 'none';
     }
 
-    function executeDelete() {
+    async function executeDelete() {
       if (!itemToDelete) return;
+      const btn = document.getElementById('btnConfirmDelete');
+      btn.innerText = 'جاري الحذف...';
 
       if (itemToDelete === 'task-archive-static') {
         const el = document.getElementById('task-archive-static');
         if (el) el.remove();
         document.getElementById('archiveTitleText').innerText = 'المنتهية والأرشيف (0)';
       } else {
-        let tasks = getTasks();
-        tasks = tasks.filter(t => t.id !== itemToDelete);
-        saveTasks(tasks);
+        currentTasksList = currentTasksList.filter(t => t.id !== itemToDelete);
+        renderTasks();
+        await saveCloudTasks(currentTasksList);
       }
+
+      btn.innerText = 'نعم، احذف';
       closeConfirmModal();
     }
 
@@ -595,7 +629,7 @@
       const today = new Date().toISOString().split('T')[0];
       const dateInp = document.getElementById('taskDateInput');
       if (dateInp) dateInp.value = today;
-      renderTasks();
+      fetchCloudTasks();
     });
   </script>
 </body>
