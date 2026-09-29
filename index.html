@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>دبلوم عالي إدارة المشاريع | PM2 - NBU</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #f7f4ed;
+      --card-bg: #ffffff;
+      --primary-green: #1b3d2f;
+      --tag-blue: #2354a8;
+      --tag-green: #2e8b74;
+      --text-main: #222222;
+      --text-muted: #7b7b7b;
+      --danger: #cf4125;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
+    body { background-color: var(--bg-color); color: var(--text-main); padding: 20px 16px 100px; max-width: 480px; margin: 0 auto; }
+
+    .header { text-align: center; margin-bottom: 24px; position: relative; }
+    .sub-title { font-size: 13px; color: var(--text-muted); margin-bottom: 4px; font-weight: 500; }
+    .main-title { font-size: 26px; font-weight: 800; color: var(--primary-green); }
+
+    .section-title { font-size: 15px; font-weight: 700; margin-bottom: 12px; color: #333; }
+
+    .card { background: var(--card-bg); border-radius: 18px; padding: 16px 18px; margin-bottom: 14px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03); display: flex; justify-content: space-between; align-items: flex-start; border: 1px solid rgba(0,0,0,0.04); }
+    .card-right { display: flex; flex-direction: column; gap: 6px; }
+    .card-tags { display: flex; gap: 8px; align-items: center; }
+    .badge { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; color: white; }
+    .badge-blue { background-color: var(--tag-blue); }
+    .badge-teal { background-color: var(--tag-green); }
+
+    .course-name { font-size: 13px; color: var(--text-muted); }
+    .card-title { font-size: 17px; font-weight: 800; color: var(--text-main); }
+    .author { font-size: 12px; color: #999; }
+
+    .card-left { text-align: left; min-width: 90px; }
+    .card-left .status-label { font-size: 11px; font-weight: 700; color: var(--danger); margin-bottom: 2px; }
+    .countdown { font-size: 13px; font-weight: 800; color: var(--danger); direction: ltr; }
+    .status-ended { font-size: 12px; font-weight: 700; color: #888; }
+    .time-ended { font-size: 11px; color: #bbb; margin-top: 2px; }
+
+    .archive-header { display: flex; justify-content: space-between; align-items: center; margin-top: 28px; margin-bottom: 12px; cursor: pointer; color: var(--text-muted); font-weight: 700; font-size: 14px; }
+    .footer-action { position: fixed; bottom: 20px; left: 0; right: 0; max-width: 480px; margin: 0 auto; padding: 0 16px; }
+    .add-btn { width: 100%; background: var(--primary-green); color: white; border: none; border-radius: 14px; padding: 15px; font-size: 16px; font-weight: 700; box-shadow: 0 6px 16px rgba(27, 61, 47, 0.25); cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; }
+  </style>
+</head>
+<body>
+
+  <!-- الترويسة -->
+  <header class="header">
+    <div class="sub-title">جامعة الحدود الشمالية | دبلوم عالي إدارة المشاريع</div>
+    <div class="main-title">المجموعة الثانية (PM2)</div>
+  </header>
+
+  <!-- التكليفات القادمة -->
+  <div class="section-title">واجب نشط</div>
+  <div id="active-tasks">
+    <div class="card">
+      <div class="card-right">
+        <div class="card-tags">
+          <span class="badge badge-blue">واجب</span>
+          <span class="course-name">إدارة المشاريع التنموية</span>
+        </div>
+        <div class="card-title">واجب 1</div>
+        <div class="author">بواسطة: منسق الشعبة</div>
+      </div>
+      <div class="card-left">
+        <div class="status-label">الأقرب</div>
+        <div class="countdown">باقي 12 ساعة</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- الأرشيف -->
+  <div class="archive-header">
+    <span>المنتهية والأرشيف (2)</span>
+    <span>⌄</span>
+  </div>
+
+  <div id="archived-tasks">
+    <div class="card" style="opacity: 0.85;">
+      <div class="card-right">
+        <div class="card-tags">
+          <span class="badge badge-teal">مناقشة</span>
+          <span class="course-name">دراسات الجدوى وتقييم المشاريع</span>
+        </div>
+        <div class="card-title">مناقشة تفاعلية</div>
+        <div class="author">بواسطة: منسق الشعبة</div>
+      </div>
+      <div class="card-left">
+        <div class="status-ended">انتهى</div>
+        <div class="time-ended">أمس 11:59 م</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- زر إضافة تنبيه بالأسفل -->
+  <div class="footer-action">
+    <button class="add-btn">+ إضافة تنبيه</button>
+  </div>
+
+</body>
+</html>
