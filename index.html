@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>الشعبة الثانية | إدارة المشاريع</title>
   
   <link rel="manifest" href="manifest.json">
@@ -11,7 +11,6 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="الشعبة الثانية">
   
-  <!-- الشعار الرسمي للجامعة -->
   <link rel="apple-touch-icon" href="https://l.top4top.io/p_3924mhxrk0.png">
   <link rel="icon" type="image/png" href="https://l.top4top.io/p_3924mhxrk0.png">
 
@@ -95,10 +94,11 @@
     .floating-btn-wrap { position: fixed; bottom: 24px; left: 0; right: 0; max-width: 480px; margin: 0 auto; padding: 0 16px; z-index: 50; }
     .btn-add-alert { width: 100%; background: var(--primary-green); color: white; border: none; border-radius: 16px; padding: 16px; font-size: 16px; font-weight: 700; box-shadow: 0 8px 20px rgba(23, 56, 43, 0.28); cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; }
 
-    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: flex-end; }
-    .modal-sheet { background: var(--bg-cream); width: 100%; max-height: 92vh; overflow-y: auto; border-radius: 28px 28px 0 0; padding: 22px 20px 32px; box-shadow: 0 -8px 30px rgba(0,0,0,0.2); }
-    .sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .sheet-title { font-size: 20px; font-weight: 800; color: #111; }
+    /* تحسينات الآيفون للنوافذ المنبثقة لمنع التجمد */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: flex-end; -webkit-overflow-scrolling: touch; }
+    .modal-sheet { background: var(--bg-cream); width: 100%; max-height: 85vh; overflow-y: auto; border-radius: 28px 28px 0 0; padding: 20px 18px 40px; box-shadow: 0 -8px 30px rgba(0,0,0,0.2); -webkit-transform: translateZ(0); }
+    .sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .sheet-title { font-size: 19px; font-weight: 800; color: #111; }
     .btn-close-circle { width: 34px; height: 34px; border-radius: 50%; background: #e7e2d5; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: #555; }
 
     .confirm-box { background: white; width: 88%; max-width: 340px; border-radius: 20px; padding: 24px 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2); margin: auto; }
@@ -108,17 +108,28 @@
     .btn-action-del { flex: 1; background: #dc2626; color: white; border: none; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; }
     .btn-action-cancel { flex: 1; background: #e5e7eb; color: #374151; border: none; padding: 12px; border-radius: 12px; font-weight: 700; font-size: 14px; cursor: pointer; }
 
-    .form-group { margin-bottom: 16px; text-align: right; }
-    .form-group label { display: block; font-size: 13px; font-weight: 700; color: #222; margin-bottom: 8px; }
+    .form-group { margin-bottom: 14px; text-align: right; }
+    .form-group label { display: block; font-size: 13px; font-weight: 700; color: #222; margin-bottom: 6px; }
     .type-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
     .type-btn { background: var(--input-bg); border: none; padding: 11px 0; border-radius: 12px; font-size: 13.5px; font-weight: 700; color: #555; cursor: pointer; }
     .type-btn.active { background: #173fa7; color: white; }
-    .custom-input, .custom-select, .custom-textarea { width: 100%; background: var(--input-bg); border: 1px solid var(--border-soft); border-radius: 14px; padding: 13px 16px; font-size: 14px; color: #222; outline: none; }
-    .custom-textarea { resize: none; height: 80px; }
+    
+    /* جعل الخط 16px لحل مشكلة الزوم والتعليق في iOS نهائياً */
+    .custom-input, .custom-select, .custom-textarea { 
+      width: 100%; 
+      background: var(--input-bg); 
+      border: 1px solid var(--border-soft); 
+      border-radius: 14px; 
+      padding: 12px 14px; 
+      font-size: 16px !important; 
+      color: #222; 
+      outline: none; 
+      -webkit-appearance: none;
+    }
+    .custom-textarea { resize: none; height: 75px; }
     .datetime-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .sub-hint { font-size: 11px; color: #8c897f; margin-top: 6px; display: block; }
-    .btn-submit-post { width: 100%; background: var(--primary-green); color: white; border: none; border-radius: 16px; padding: 16px; font-size: 16px; font-weight: 800; cursor: pointer; margin-top: 14px; box-shadow: 0 4px 12px rgba(23, 56, 43, 0.25); }
-
+    .sub-hint { font-size: 11px; color: #8c897f; margin-top: 4px; display: block; }
+    .btn-submit-post { width: 100%; background: var(--primary-green); color: white; border: none; border-radius: 16px; padding: 15px; font-size: 16px; font-weight: 800; cursor: pointer; margin-top: 10px; box-shadow: 0 4px 12px rgba(23, 56, 43, 0.25); }
     .btn-toggle-notif { width: 100%; background: #ece7dc; color: #374151; border: none; border-radius: 14px; padding: 13px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 20px; }
   </style>
 </head>
@@ -245,7 +256,7 @@
     <div class="confirm-box">
       <div style="font-size:36px; margin-bottom:10px;">⚠️</div>
       <div class="confirm-title">تأكيد الحذف</div>
-      <div class="confirm-desc" id="confirmMessageText">هل أنت متأكد من رغبتك في حذف هذا التكليف نهائياً؟</div>
+      <div class="confirm-desc" id="confirmMessageText">هل أنت متأكد من حذف هذا التكليف نهائياً؟</div>
       <div class="confirm-actions">
         <button class="btn-action-del" id="btnConfirmDelete" onclick="executeDelete()">نعم، احذف</button>
         <button class="btn-action-cancel" onclick="closeConfirmModal()">إلغاء</button>
@@ -253,7 +264,7 @@
     </div>
   </div>
 
-  <!-- نافذة إضافة تنبيه مع خانة اسم الناشر -->
+  <!-- نافذة إضافة تنبيه -->
   <div class="modal-overlay" id="alertModal">
     <div class="modal-sheet">
       <div class="sheet-header">
@@ -359,7 +370,7 @@
 
     function handleNotificationToggle() {
       if (!('Notification' in window)) {
-        alert('الإشعارات تتطلب تثبيت الموقع على الشاشة الرئيسية عبر מתصفح Safari أولاً.');
+        alert('الإشعارات تتطلب تثبيت الموقع على الشاشة الرئيسية عبر متصفح Safari أولاً.');
         return;
       }
 
@@ -458,10 +469,16 @@
           });
         }
 
-        knownTaskIds = new Set(loaded.map(t => t.id));
+        // تحديث الواجهة فقط إذا تغيرت البيانات لمنع تجميد المتصفح
+        const currentDataStr = JSON.stringify(currentTasksList);
+        const newDataStr = JSON.stringify(loaded);
+        if (currentDataStr !== newDataStr) {
+          knownTaskIds = new Set(loaded.map(t => t.id));
+          currentTasksList = loaded;
+          renderTasks();
+        }
+        
         isFirstLoad = false;
-        currentTasksList = loaded;
-        renderTasks();
         checkDeadlinesNotifications();
       } catch (err) {
         console.error("خطأ جلب البيانات:", err);
@@ -576,8 +593,11 @@
       });
     }
 
+    // تحديث الأرقام فقط بدون إعادة تحميل الصفحة
     setInterval(updateAllTimers, 1000);
-    setInterval(fetchCloudTasks, 5000);
+    // فحص السحابة كل 6 ثوانٍ
+    setInterval(fetchCloudTasks, 6000);
+    // فحص الإشعارات كل دقيقة
     setInterval(checkDeadlinesNotifications, 60000);
 
     async function handlePublish() {
