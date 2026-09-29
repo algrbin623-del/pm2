@@ -68,9 +68,21 @@
     .banner-left-actions a { font-size: 13.5px; font-weight: 800; color: #111; text-decoration: underline; cursor: pointer; }
     .banner-left-actions .close-x { background: none; border: none; font-size: 15px; color: #777; cursor: pointer; }
 
-    .active-card { background: var(--card-active-bg); border-radius: 20px; padding: 16px 18px; margin-bottom: 14px; border: 1px solid #dce8fa; }
-    .card-flex { display: flex; justify-content: space-between; align-items: flex-start; }
-    .card-right-info { text-align: right; display: flex; flex-direction: column; gap: 6px; flex: 1; padding-left: 10px; }
+    /* تصميم بطاقة التكليف */
+    .active-card { background: var(--card-active-bg); border-radius: 20px; padding: 16px 18px; margin-bottom: 14px; border: 1px solid #dce8fa; position: relative; transition: all 0.25s ease; }
+    
+    /* ستايل الواجب المكتمل محلياً للطالب */
+    .active-card.completed {
+      background: #fcfcfc;
+      border-color: #e5e7eb;
+      opacity: 0.75;
+    }
+    .active-card.completed .task-title {
+      text-decoration: line-through;
+      color: #6b7280;
+    }
+
+    .card-top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
     .tags-row { display: flex; align-items: center; gap: 8px; }
     .badge-kind { color: white; font-size: 11px; font-weight: 700; padding: 3px 12px; border-radius: 12px; }
     .badge-blue { background-color: var(--accent-blue); }
@@ -78,6 +90,31 @@
     .badge-purple { background-color: var(--accent-purple); }
     .badge-amber { background-color: var(--accent-amber); }
     .subject-title { font-size: 12.5px; color: var(--text-muted); font-weight: 600; }
+
+    /* زر التحديد الشخصي للحل */
+    .btn-toggle-done {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: #ffffff;
+      border: 1.5px solid #cbd5e1;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #64748b;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s ease;
+    }
+    .active-card.completed .btn-toggle-done {
+      background: #ecfdf5;
+      border-color: #10b981;
+      color: #047857;
+    }
+
+    .card-flex { display: flex; justify-content: space-between; align-items: flex-start; }
+    .card-right-info { text-align: right; display: flex; flex-direction: column; gap: 4px; flex: 1; padding-left: 10px; }
     .task-title { font-size: 17px; font-weight: 800; color: #111; margin-top: 2px; }
     .task-desc { font-size: 12.5px; color: #4b5563; line-height: 1.4; margin-top: 4px; }
     .author-line { font-size: 12px; color: #888; display: flex; align-items: center; gap: 6px; margin-top: 4px; }
@@ -167,7 +204,6 @@
     </div>
   </header>
 
-  <!-- عداد التكليفات النشطة -->
   <div class="section-label" id="activeCounterText">جاري التحميل...</div>
 
   <div class="banner-pwa" id="iosBanner">
@@ -181,20 +217,17 @@
     </div>
   </div>
 
-  <!-- قائمة الواجبات النشطة -->
   <div id="tasksList"></div>
 
-  <!-- قسم الأرشيف والمنتهية المحدّث تلقائياً -->
+  <!-- الأرشيف -->
   <div class="archive-header-row" onclick="toggleArchive()">
     <span class="arrow-icon" id="archiveArrow">⌄</span>
     <span id="archiveTitleText">المنتهية والأرشيف (1)</span>
   </div>
 
   <div class="archive-container" id="archiveContainer">
-    <!-- التكليفات المنتهية تضاف ديناميكياً هنا -->
     <div id="dynamicArchiveList"></div>
 
-    <!-- التكليف التأسيسي الثابت -->
     <div class="archive-card" id="task-archive-static">
       <div class="card-flex">
         <div class="card-right-info">
@@ -347,6 +380,28 @@
     let knownTaskIds = new Set();
     let isFirstLoad = true;
 
+    // جلب قائمة الواجبات المنجزة محلياً لهذا الطالب
+    function getCompletedTaskIds() {
+      try {
+        return JSON.parse(localStorage.getItem('my_completed_tasks') || '[]');
+      } catch (e) {
+        return [];
+      }
+    }
+
+    // تبديل حالة الإنجاز (تم الحل / لم يتم) وحفظها محلياً
+    function toggleTaskDone(taskId, event) {
+      if (event) event.stopPropagation();
+      let completed = getCompletedTaskIds();
+      if (completed.includes(taskId)) {
+        completed = completed.filter(id => id !== taskId);
+      } else {
+        completed.push(taskId);
+      }
+      localStorage.setItem('my_completed_tasks', JSON.stringify(completed));
+      renderTasks();
+    }
+
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js').catch(err => console.log('SW reg error:', err));
     }
@@ -429,12 +484,17 @@
       }
     }
 
+    // فحص المواعيد مع تجاهل أي واجب حله الطالب محلياً
     function checkDeadlinesNotifications() {
       if (!isNotificationEnabled()) return;
       const now = Date.now();
+      const completedIds = new Set(getCompletedTaskIds());
 
       currentTasksList.forEach(t => {
+        // إذا كان الطالب قد علّم على الواجب أنه تم حله، لا نرسل له إشعارات اقتراب الموعد
+        if (completedIds.has(t.id)) return;
         if (!t.dueDate) return;
+
         const target = new Date(t.dueDate).getTime();
         const diffHours = (target - now) / (1000 * 60 * 60);
 
@@ -516,7 +576,6 @@
       return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
     }
 
-    // فرز المهام تلقائياً: النشطة في الأعلى، والمنتهية تنزل للأرشيف مباشرة
     function renderTasks() {
       const activeContainer = document.getElementById('tasksList');
       const archiveDynamic = document.getElementById('dynamicArchiveList');
@@ -529,6 +588,7 @@
       const now = Date.now();
       const activeTasks = [];
       const expiredTasks = [];
+      const completedSet = new Set(getCompletedTaskIds());
 
       currentTasksList.forEach(t => {
         if (!t.dueDate) {
@@ -536,21 +596,19 @@
         } else {
           const diff = new Date(t.dueDate).getTime() - now;
           if (diff <= 0) {
-            expiredTasks.push(t); // انتهى موعده -> أرشيف
+            expiredTasks.push(t);
           } else {
-            activeTasks.push(t); // ما زال نشطاً -> فوق
+            activeTasks.push(t);
           }
         }
       });
 
-      // عداد النشطة
       const count = activeTasks.length;
       if (count === 0) counter.innerText = 'لا توجد واجبات نشطة حالياً';
       else if (count === 1) counter.innerText = 'واجب واحد';
       else if (count === 2) counter.innerText = 'واجبان';
       else counter.innerText = `${count} واجبات`;
 
-      // عداد الأرشيف (المنتهية السحابية + 1 التكليف التأسيسي)
       const totalArchived = expiredTasks.length + (document.getElementById('task-archive-static') ? 1 : 0);
       archiveTitle.innerText = `المنتهية والأرشيف (${totalArchived})`;
 
@@ -558,23 +616,30 @@
         activeContainer.innerHTML = '<div style="text-align:center; padding:30px; color:#888; font-size:14px; background:white; border-radius:16px;">لا توجد أي تكليفات نشطة. اضغط بالأسفل لإضافة تنبيه جديد.</div>';
       }
 
-      // رسم النشطة فوق
       activeTasks.forEach((t) => {
         let badgeColorClass = 'badge-blue';
         if (t.type === 'مناقشة') badgeColorClass = 'badge-teal';
         else if (t.type === 'اختبار') badgeColorClass = 'badge-purple';
         else if (t.type === 'إعلان') badgeColorClass = 'badge-amber';
 
+        const isDone = completedSet.has(t.id);
+
         const card = document.createElement('div');
-        card.className = 'active-card';
+        card.className = `active-card ${isDone ? 'completed' : ''}`;
         card.id = `card-${t.id}`;
         card.innerHTML = `
+          <div class="card-top-bar">
+            <div class="tags-row">
+              <span class="badge-kind ${badgeColorClass}">${t.type}</span>
+              <span class="subject-title">${t.course}</span>
+            </div>
+            <button class="btn-toggle-done" onclick="toggleTaskDone('${t.id}', event)">
+              <span>${isDone ? '✓ تم الحل' : '○ حليته؟'}</span>
+            </button>
+          </div>
+
           <div class="card-flex">
             <div class="card-right-info">
-              <div class="tags-row">
-                <span class="badge-kind ${badgeColorClass}">${t.type}</span>
-                <span class="subject-title">${t.course}</span>
-              </div>
               <div class="task-title">${t.title}</div>
               ${t.desc ? `<div class="task-desc">${t.desc}</div>` : ''}
               <div class="author-line">
@@ -584,8 +649,8 @@
             </div>
 
             <div class="card-left-time">
-              <div class="label-near">الأقرب</div>
-              <div class="countdown-words" id="remain-words-${t.id}">جاري الحساب...</div>
+              <div class="label-near">${isDone ? 'مكتمل' : 'الأقرب'}</div>
+              <div class="countdown-words" id="remain-words-${t.id}">${isDone ? 'أحسنت 🎉' : 'جاري الحساب...'}</div>
               <div class="digital-clock" id="clock-${t.id}">00:00:00</div>
             </div>
           </div>
@@ -600,7 +665,6 @@
         activeContainer.appendChild(card);
       });
 
-      // رسم المنتهية داخل الأرشيف
       expiredTasks.forEach((t) => {
         let badgeColorClass = 'badge-blue';
         if (t.type === 'مناقشة') badgeColorClass = 'badge-teal';
@@ -641,6 +705,7 @@
     function updateAllTimers() {
       const now = new Date().getTime();
       let hasNewlyExpired = false;
+      const completedSet = new Set(getCompletedTaskIds());
 
       currentTasksList.forEach(t => {
         if (!t.dueDate) return;
@@ -648,11 +713,8 @@
         const diff = target - now;
 
         if (diff <= 0) {
-          // إذا انتهى الموعد وكان ما زال مرسوماً في النشطة
           const activeCard = document.getElementById(`card-${t.id}`);
-          if (activeCard) {
-            hasNewlyExpired = true;
-          }
+          if (activeCard) hasNewlyExpired = true;
           return;
         }
 
@@ -667,7 +729,7 @@
         const wordsEl = document.getElementById(`remain-words-${t.id}`);
         const clockEl = document.getElementById(`clock-${t.id}`);
 
-        if (wordsEl) {
+        if (wordsEl && !completedSet.has(t.id)) {
           if (days >= 1) wordsEl.innerText = `باقي ${days} يوم`;
           else wordsEl.innerText = `باقي ${hrs} ساعات`;
         }
@@ -677,10 +739,7 @@
         }
       });
 
-      // إذا صفر العداد أثناء وجود المستخدم بالصفحة، يتم إنزاله للأرشيف فوراً
-      if (hasNewlyExpired) {
-        renderTasks();
-      }
+      if (hasNewlyExpired) renderTasks();
     }
 
     setInterval(updateAllTimers, 1000);
