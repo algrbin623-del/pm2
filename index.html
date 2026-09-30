@@ -134,8 +134,10 @@
     .expand-arrow { font-size: 13px; color: #8e8e93; cursor: pointer; }
 
     .archive-header-row { display: flex; align-items: center; gap: 8px; margin-top: 26px; margin-bottom: 14px; cursor: pointer; color: #374151; font-weight: 700; font-size: 13px; user-select: none; }
-    .archive-header-row .arrow-icon { font-size: 12px; color: #6b7280; transition: transform 0.2s ease; }
-    .archive-container { display: flex; flex-direction: column; gap: 12px; }
+    .archive-header-row .arrow-icon { font-size: 13px; color: #6b7280; transition: transform 0.2s ease; display: inline-block; }
+    
+    /* جعل الأرشيف مخفي ومسفوط افتراضياً */
+    .archive-container { display: none; flex-direction: column; gap: 12px; }
     .archive-card { background: #ffffff; border-radius: 18px; padding: 16px 18px; box-shadow: 0 1px 4px rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.03); }
     .status-ended { font-size: 12px; font-weight: 700; color: #888; text-align: left; }
     .ended-time { font-size: 11px; color: #aaa; margin-top: 2px; text-align: left; }
@@ -244,13 +246,13 @@
 
   <div id="tasksList"></div>
 
-  <!-- الأرشيف -->
+  <!-- الأرشيف (مسفوط ومخفي افتراضياً) -->
   <div class="archive-header-row" onclick="toggleArchive()">
     <span class="arrow-icon" id="archiveArrow">⌄</span>
     <span id="archiveTitleText">المنتهية والأرشيف (1)</span>
   </div>
 
-  <div class="archive-container" id="archiveContainer">
+  <div class="archive-container" id="archiveContainer" style="display: none;">
     <div id="dynamicArchiveList"></div>
 
     <div class="archive-card" id="task-archive-static">
@@ -453,7 +455,7 @@
       reader.readAsDataURL(file);
     }
 
-    // دالة الفتح المتوافقة كلياً مع متصفح Safari على iOS
+    // فتح الملف في Safari بدون حظر
     function openAttachedFile(taskId) {
       const task = currentTasksList.find(t => t.id === taskId);
       if (!task) return;
@@ -993,15 +995,16 @@
       closeConfirmModal();
     }
 
+    // دالة طي وسفط الأرشيف (تفتح وتقفل بسلاسة تامة)
     function toggleArchive() {
       const box = document.getElementById('archiveContainer');
       const arrow = document.getElementById('archiveArrow');
-      if (box.style.display === 'none') {
+      if (box.style.display === 'none' || box.style.display === '') {
         box.style.display = 'flex';
-        arrow.style.transform = 'rotate(0deg)';
+        arrow.style.transform = 'rotate(180deg)';
       } else {
         box.style.display = 'none';
-        arrow.style.transform = 'rotate(180deg)';
+        arrow.style.transform = 'rotate(0deg)';
       }
     }
 
