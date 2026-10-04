@@ -14,6 +14,19 @@
   <link rel="apple-touch-icon" href="https://l.top4top.io/p_3924mhxrk0.png">
   <link rel="icon" type="image/png" href="https://l.top4top.io/p_3924mhxrk0.png">
 
+  <!-- OneSignal SDK -->
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+  <script>
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function(OneSignal) {
+      await OneSignal.init({
+        appId: "a952fd6a-c885-467e-aa73-1e9ca192832d",
+        serviceWorkerParam: { scope: "/pm2/" },
+        serviceWorkerPath: "/pm2/OneSignalSDKWorker.js"
+      });
+    });
+  </script>
+
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -136,7 +149,6 @@
     .archive-header-row { display: flex; align-items: center; gap: 8px; margin-top: 26px; margin-bottom: 14px; cursor: pointer; color: #374151; font-weight: 700; font-size: 13px; user-select: none; }
     .archive-header-row .arrow-icon { font-size: 13px; color: #6b7280; transition: transform 0.2s ease; display: inline-block; }
     
-    /* جعل الأرشيف مخفي ومسفوط افتراضياً */
     .archive-container { display: none; flex-direction: column; gap: 12px; }
     .archive-card { background: #ffffff; border-radius: 18px; padding: 16px 18px; box-shadow: 0 1px 4px rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.03); }
     .status-ended { font-size: 12px; font-weight: 700; color: #888; text-align: left; }
@@ -455,7 +467,6 @@
       reader.readAsDataURL(file);
     }
 
-    // فتح الملف في Safari بدون حظر
     function openAttachedFile(taskId) {
       const task = currentTasksList.find(t => t.id === taskId);
       if (!task) return;
@@ -549,10 +560,6 @@
       document.body.removeChild(link);
     }
 
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js').catch(err => console.log('SW reg error:', err));
-    }
-
     function isNotificationEnabled() {
       return ('Notification' in window) && Notification.permission === 'granted';
     }
@@ -584,24 +591,14 @@
     }
 
     function handleNotificationToggle() {
-      if (!('Notification' in window)) {
-        alert('الإشعارات تتطلب تثبيت الموقع على الشاشة الرئيسية عبر متصفح Safari أولاً.');
-        return;
-      }
-
-      if (isNotificationEnabled()) {
-        alert('لإيقاف الإشعارات، يمكنك تعطيلها مباشرة من إعدادات الجوال > الإشعارات.');
-      } else {
-        Notification.requestPermission().then((perm) => {
-          if (perm === 'granted') {
-            updateNotifModalUI();
-            triggerPushNotification('تم تفعيل التنبيهات بنجاح 🔔', 'ستصلك التنبيهات فور نشر أي تكليف وقبل موعده بـ 24 ساعة وبساعتين.');
-          } else {
-            alert('يرجى السماح بالإشعارات لتصلك التنبيهات.');
-          }
+      if (window.OneSignalDeferred) {
+        OneSignalDeferred.push(function(OneSignal) {
+          OneSignal.Notifications.requestPermission();
         });
+      } else if ('Notification' in window) {
+        Notification.requestPermission();
       }
-      updateNotifModalUI();
+      setTimeout(updateNotifModalUI, 1000);
     }
 
     function openNotifSheet() {
@@ -611,58 +608,6 @@
 
     function closeNotifSheet() {
       document.getElementById('notifModal').style.display = 'none';
-    }
-
-    function triggerPushNotification(title, body, tag) {
-      if (!isNotificationEnabled()) return;
-
-      if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-        navigator.serviceWorker.controller.postMessage({
-          type: 'SHOW_NOTIFICATION',
-          title: title,
-          body: body,
-          tag: tag || 'pm2-alert'
-        });
-      } else {
-        new Notification(title, {
-          body: body,
-          icon: 'https://l.top4top.io/p_3924mhxrk0.png'
-        });
-      }
-    }
-
-    function checkDeadlinesNotifications() {
-      if (!isNotificationEnabled()) return;
-      const now = Date.now();
-      const completedIds = new Set(getCompletedTaskIds());
-
-      currentTasksList.forEach(t => {
-        if (completedIds.has(t.id)) return;
-        if (!t.dueDate) return;
-
-        const target = new Date(t.dueDate).getTime();
-        const diffHours = (target - now) / (1000 * 60 * 60);
-
-        const key24 = `notif_24h_${t.id}`;
-        if (diffHours > 0 && diffHours <= 24 && !localStorage.getItem(key24)) {
-          triggerPushNotification(
-            `⏳ موعد تسليم يقترب: ${t.type}`,
-            `باقي 24 ساعة على موعد «${t.title}» في ${t.course}`,
-            `due-24-${t.id}`
-          );
-          localStorage.setItem(key24, 'true');
-        }
-
-        const key2h = `notif_2h_${t.id}`;
-        if (diffHours > 0 && diffHours <= 2 && !localStorage.getItem(key2h)) {
-          triggerPushNotification(
-            `🚨 تنبيه عاجل: ${t.type}`,
-            `باقي ساعتان فقط على موعد «${t.title}» في ${t.course}!`,
-            `due-2-${t.id}`
-          );
-          localStorage.setItem(key2h, 'true');
-        }
-      });
     }
 
     async function fetchCloudTasks() {
@@ -675,18 +620,6 @@
         else if (data && typeof data === 'object') loaded = Object.values(data);
         else loaded = [];
 
-        if (!isFirstLoad) {
-          loaded.forEach(t => {
-            if (!knownTaskIds.has(t.id)) {
-              triggerPushNotification(
-                `📢 تكليف جديد: ${t.type}`,
-                `${t.course}: ${t.title} (بواسطة ${t.author || 'الشعبة'})`,
-                `new-${t.id}`
-              );
-            }
-          });
-        }
-
         const currentDataStr = JSON.stringify(currentTasksList);
         const newDataStr = JSON.stringify(loaded);
         if (currentDataStr !== newDataStr) {
@@ -696,7 +629,6 @@
         }
         
         isFirstLoad = false;
-        checkDeadlinesNotifications();
       } catch (err) {
         console.error("خطأ جلب البيانات:", err);
       }
@@ -899,7 +831,6 @@
 
     setInterval(updateAllTimers, 1000);
     setInterval(fetchCloudTasks, 15000);
-    setInterval(checkDeadlinesNotifications, 60000);
 
     async function handlePublish() {
       const course = document.getElementById('courseSelect').value.trim();
@@ -942,8 +873,6 @@
       currentTasksList.unshift(newTask);
       renderTasks();
       await saveCloudTasks(currentTasksList);
-
-      triggerPushNotification(`تم نشر ${newTask.type} جديد`, `${newTask.course}: ${newTask.title}`);
 
       btn.innerText = 'نشر التنبيه';
       btn.disabled = false;
@@ -995,7 +924,6 @@
       closeConfirmModal();
     }
 
-    // دالة طي وسفط الأرشيف (تفتح وتقفل بسلاسة تامة)
     function toggleArchive() {
       const box = document.getElementById('archiveContainer');
       const arrow = document.getElementById('archiveArrow');
