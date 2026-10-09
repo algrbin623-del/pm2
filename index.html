@@ -22,7 +22,7 @@
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(async function(OneSignal) {
       await OneSignal.init({
-        appId: "A952fd6a-c885-467e-aa73-1e9ca192832d",
+        appId: "a952fd6a-c885-467e-aa73-1e9ca192832d",
         safari_web_id: "web.onesignal.auto.0e17621f-8e43-4e3f-a392-50d4f2025ff1",
         notifyButton: { enable: false }
       });
@@ -312,7 +312,7 @@
 
       <div style="text-align:right; font-size:14px; line-height:1.7;">
         <p style="font-size:15px; font-weight:800; color:#111; margin-bottom:12px;" id="notifStatusTitle">
-          الإشعارات مفعّلة على هذا الجهاز.
+          جاري التحقق من حالة الإشعارات...
         </p>
 
         <p style="color:#4b5563; font-weight:600; margin-bottom:10px;">تصلك إشعارات:</p>
@@ -331,7 +331,7 @@
         </div>
 
         <button class="btn-toggle-notif" id="btnNotifToggle" onclick="handleNotificationToggle()">
-          تفعيل / إيقاف الإشعارات
+          تفعيل الإشعارات على هذا الجهاز
         </button>
       </div>
     </div>
@@ -568,9 +568,9 @@
         if (isPermissionGranted) {
           titleEl.innerText = 'الإشعارات مفعلة على هذا الجهاز.';
           titleEl.style.color = '#1b4d3e';
-          btnEl.innerText = 'إيقاف الإشعارات على هذا الجهاز';
-          btnEl.style.background = '#ece7dc';
-          btnEl.style.color = '#374151';
+          btnEl.innerText = 'تم تفعيل الإشعارات بنجاح ✓';
+          btnEl.style.background = '#d7e8db';
+          btnEl.style.color = '#17382b';
           if (bellEl) bellEl.classList.add('active-bell');
         } else {
           titleEl.innerText = 'الإشعارات غير مفعلة على هذا الجهاز.';
@@ -586,10 +586,12 @@
     function handleNotificationToggle() {
       window.OneSignalDeferred = window.OneSignalDeferred || [];
       OneSignalDeferred.push(async function(OneSignal) {
-        if (!OneSignal.Notifications.permission) {
+        try {
           await OneSignal.Notifications.requestPermission();
+          updateNotifModalUI();
+        } catch (err) {
+          console.error('خطأ في تفعيل الإشعارات:', err);
         }
-        updateNotifModalUI();
       });
     }
 
