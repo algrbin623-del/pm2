@@ -15,6 +15,20 @@
   <link rel="icon" type="image/png" href="https://l.top4top.io/p_3924mhxrk0.png">
 
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+  
+  <!-- OneSignal SDK Integration -->
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+  <script>
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function(OneSignal) {
+      await OneSignal.init({
+        appId: "A952fd6a-c885-467e-aa73-1e9ca192832d",
+        safari_web_id: "web.onesignal.auto.0e17621f-8e43-4e3f-a392-50d4f2025ff1",
+        notifyButton: { enable: false }
+      });
+    });
+  </script>
+
   <style>
     :root {
       --bg-cream: #f7f4ed;
@@ -323,7 +337,7 @@
     </div>
   </div>
 
-  <!-- نافذة تأكيد الحذف بدون رمز سري -->
+  <!-- نافذة تأكيد الحذف -->
   <div class="modal-overlay" id="confirmModal" style="display:none; align-items:center; justify-content:center;">
     <div class="confirm-box">
       <div style="font-size:36px; margin-bottom:10px;">⚠️</div>
@@ -336,7 +350,7 @@
     </div>
   </div>
 
-  <!-- نافذة إضافة تنبيه بدون رمز سري -->
+  <!-- نافذة إضافة تنبيه -->
   <div class="modal-overlay" id="alertModal">
     <div class="modal-sheet">
       <div class="sheet-header">
@@ -539,10 +553,6 @@
       document.body.removeChild(link);
     }
 
-    function isNotificationEnabled() {
-      return ('Notification' in window) && Notification.permission === 'granted';
-    }
-
     function updateNotifModalUI() {
       const titleEl = document.getElementById('notifStatusTitle');
       const btnEl = document.getElementById('btnNotifToggle');
@@ -552,29 +562,35 @@
 
       if (pwaBox) pwaBox.style.display = isStandalone ? 'none' : 'block';
 
-      if (isNotificationEnabled()) {
-        titleEl.innerText = 'الإشعارات مفعلة على هذا الجهاز.';
-        titleEl.style.color = '#1b4d3e';
-        btnEl.innerText = 'إيقاف الإشعارات على هذا الجهاز';
-        btnEl.style.background = '#ece7dc';
-        btnEl.style.color = '#374151';
-        if (bellEl) bellEl.classList.add('active-bell');
-      } else {
-        titleEl.innerText = 'الإشعارات غير مفعلة على هذا الجهاز.';
-        titleEl.style.color = '#cf4324';
-        btnEl.innerText = 'تفعيل الإشعارات على هذا الجهاز';
-        btnEl.style.background = '#17382b';
-        btnEl.style.color = '#ffffff';
-        if (bellEl) bellEl.classList.remove('active-bell');
-      }
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      OneSignalDeferred.push(async function(OneSignal) {
+        const isPermissionGranted = OneSignal.Notifications.permission;
+        if (isPermissionGranted) {
+          titleEl.innerText = 'الإشعارات مفعلة على هذا الجهاز.';
+          titleEl.style.color = '#1b4d3e';
+          btnEl.innerText = 'إيقاف الإشعارات على هذا الجهاز';
+          btnEl.style.background = '#ece7dc';
+          btnEl.style.color = '#374151';
+          if (bellEl) bellEl.classList.add('active-bell');
+        } else {
+          titleEl.innerText = 'الإشعارات غير مفعلة على هذا الجهاز.';
+          titleEl.style.color = '#cf4324';
+          btnEl.innerText = 'تفعيل الإشعارات على هذا الجهاز';
+          btnEl.style.background = '#17382b';
+          btnEl.style.color = '#ffffff';
+          if (bellEl) bellEl.classList.remove('active-bell');
+        }
+      });
     }
 
     function handleNotificationToggle() {
-      if (typeof window.requestFirebaseNotification === 'function') {
-        window.requestFirebaseNotification();
-      } else if ('Notification' in window) {
-        Notification.requestPermission().then(() => updateNotifModalUI());
-      }
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      OneSignalDeferred.push(async function(OneSignal) {
+        if (!OneSignal.Notifications.permission) {
+          await OneSignal.Notifications.requestPermission();
+        }
+        updateNotifModalUI();
+      });
     }
 
     function openNotifSheet() {
@@ -912,66 +928,9 @@
       const dateInp = document.getElementById('taskDateInput');
       if (dateInp) dateInp.value = today;
 
-      if (isNotificationEnabled()) {
-        const bell = document.getElementById('bellBtn');
-        if (bell) bell.classList.add('active-bell');
-      }
-
+      updateNotifModalUI();
       fetchCloudTasks();
     });
-  </script>
-
-  <!-- كود إشعارات Firebase Cloud Messaging -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
-    import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-messaging.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyDtFwMuF8sW5Pkqkgu010oHqsA7ffrnXMM",
-      authDomain: "pm2-app-c29fa.firebaseapp.com",
-      projectId: "pm2-app-c29fa",
-      storageBucket: "pm2-app-c29fa.firebasestorage.app",
-      messagingSenderId: "576395459652",
-      appId: "1:576395459652:web:65caa9ef7a2692183f9011",
-      measurementId: "G-Z8EY44VM2D"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const messaging = getMessaging(app);
-
-    window.requestFirebaseNotification = async function() {
-      if ('serviceWorker' in navigator && 'Notification' in window) {
-        try {
-          const registration = await navigator.serviceWorker.register('/pm2/firebase-messaging-sw.js');
-          const permission = await Notification.requestPermission();
-          
-          if (permission === 'granted') {
-            const currentToken = await getToken(messaging, {
-              vapidKey: 'BBxT4h0MXr2gO_ULuUpBAnuHcW6iDXjwYIeZ2oBZUWhyD3tlUpo2BPJaK8_4STIj1Q4d8fPIp5xmPY9OKJ0MVoE',
-              serviceWorkerRegistration: registration
-            });
-
-            if (currentToken) {
-              console.log('FCM Device Token:', currentToken);
-            }
-          }
-          if (typeof updateNotifModalUI === 'function') updateNotifModalUI();
-        } catch (err) {
-          console.error('خطأ في إعداد إشعارات Firebase:', err);
-        }
-      }
-    };
-
-    onMessage(messaging, (payload) => {
-      console.log('إشعار مستلم:', payload);
-      new Notification(payload.notification.title || 'تنبيه جديد', {
-        body: payload.notification.body || '',
-        icon: 'https://l.top4top.io/p_3924mhxrk0.png'
-      });
-    });
-
-    // تشغيل تلقائي عند التحميل
-    window.requestFirebaseNotification();
   </script>
 </body>
 </html>
