@@ -3,84 +3,256 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>نظام إدارة المهام - الدفعة</title>
+  <title>نظام إدارة المهام والتكليفات</title>
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#4f46e5">
+  <meta name="theme-color" content="#1e293b">
+  <link rel="apple-touch-icon" href="icon-192.png">
   <style>
     :root {
-      --primary: #4f46e5;
-      --primary-hover: #4338ca;
-      --bg: #f8fafc;
-      --card-bg: #ffffff;
-      --text: #0f172a;
-      --text-muted: #64748b;
-      --border: #e2e8f0;
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --text-color: #f8fafc;
+      --accent-color: #38bdf8;
+      --accent-hover: #0284c7;
+      --danger-color: #ef4444;
+      --border-color: #334155;
     }
-    body {
-      font-family: system-ui, -apple-system, sans-serif;
-      background-color: var(--bg);
-      color: var(--text);
+
+    * {
+      box-sizing: border-box;
       margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
       padding: 20px;
       display: flex;
       justify-content: center;
+      min-height: 100vh;
     }
+
     .container {
       width: 100%;
-      max-width: 600px;
+      max-width: 650px;
     }
-    .header {
+
+    header {
       text-align: center;
-      margin-bottom: 24px;
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid var(--border-color);
     }
+
+    h1 {
+      font-size: 1.6rem;
+      color: var(--accent-color);
+      margin-bottom: 8px;
+    }
+
+    p.subtitle {
+      font-size: 0.9rem;
+      color: #94a3b8;
+    }
+
     .card {
-      background: var(--card-bg);
-      padding: 20px;
+      background-color: var(--card-bg);
       border-radius: 12px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-      margin-bottom: 16px;
-      border: 1px solid var(--border);
+      padding: 20px;
+      margin-bottom: 20px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }
+
     .btn {
-      background: var(--primary);
-      color: white;
+      background-color: var(--accent-color);
+      color: #0f172a;
       border: none;
-      padding: 10px 16px;
+      padding: 12px 20px;
       border-radius: 8px;
+      font-weight: bold;
       cursor: pointer;
-      font-weight: 600;
       width: 100%;
+      font-size: 1rem;
+      transition: background-color 0.2s;
     }
-    .btn:hover { background: var(--primary-hover); }
-    .task-item {
-      padding: 12px;
-      border-bottom: 1px solid var(--border);
+
+    .btn:hover {
+      background-color: var(--accent-hover);
+    }
+
+    .btn-danger {
+      background-color: var(--danger-color);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background-color: #dc2626;
+    }
+
+    .input-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 0.9rem;
+      color: #cbd5e1;
+    }
+
+    input[type="text"], input[type="date"], input[type="password"], textarea {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      background-color: #0f172a;
+      color: white;
+      font-size: 0.95rem;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .task-card {
+      background-color: #0f172a;
+      border-right: 4px solid var(--accent-color);
+      padding: 15px;
+      border-radius: 6px;
+      margin-bottom: 12px;
+      position: relative;
+    }
+
+    .task-title {
+      font-size: 1.1rem;
+      font-weight: bold;
+      margin-bottom: 5px;
+
+    }
+
+    .task-date {
+      font-size: 0.8rem;
+      color: #94a3b8;
+      margin-bottom: 8px;
+    }
+
+    .task-desc {
+      font-size: 0.95rem;
+      color: #e2e8f0;
+      white-space: pre-line;
+    }
+
+    .admin-controls {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
     }
-    .task-item:last-child { border-bottom: none; }
+
+    .admin-btn {
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      border: none;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .notification-banner {
+      background-color: rgba(56, 189, 248, 0.1);
+      border: 1px solid var(--accent-color);
+      padding: 12px;
+      border-radius: 8px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .pin-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .pin-box {
+      background: var(--card-bg);
+      padding: 25px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 350px;
+      text-align: center;
+      border: 1px solid var(--border-color);
+    }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <div class="header">
-    <h2>نظام إدارة مهام الدفعة</h2>
-    <p style="color: var(--text-muted)">جدول التكليفات والتنبيهات المباشرة</p>
+  <header>
+    <h1>نظام إدارة مهام الدفعة</h1>
+    <p class="subtitle">التكليفات الأكاديمية والجدول التفاعلي</p>
+  </header>
+
+  <div id="notificationBanner" class="notification-banner">
+    <p style="margin-bottom: 8px; font-size: 0.9rem;">احصل على التنبيهات الفورية للتكليفات والمهام الجديدة</p>
+    <button class="btn" onclick="enableNotifications()">تفعيل الإشعارات على هذا الجهاز</button>
   </div>
 
   <div class="card">
-    <button class="btn" onclick="requestNotificationPermission()">تفعيل الإشعارات على هذا الجهاز</button>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+      <h2>التكليفات الحالية</h2>
+      <button id="adminToggleBtn" onclick="openAdminPinModal()" style="background: transparent; color: var(--accent-color); border: 1px solid var(--accent-color); padding: 5px 10px; border-radius: 6px; cursor: pointer;">لوحة الأدمن</button>
+    </div>
+    <div id="tasksList">
+      <p style="text-align: center; color: #94a3b8;">جاري تحميل المهام...</p>
+    </div>
   </div>
 
-  <div class="card">
-    <h3>التكليفات الحالية</h3>
-    <div id="taskList">جاري تحميل المهام...</div>
+  <div id="adminPanel" class="card hidden">
+    <h2 style="margin-bottom: 15px; color: var(--accent-color);">إضافة تكليف جديد</h2>
+    <form id="taskForm" onsubmit="handleTaskSubmit(event)">
+      <div class="input-group">
+        <label for="taskTitle">عنوان التكليف</label>
+        <input type="text" id="taskTitle" required placeholder="مثال: واجب إدارة المشاريع">
+      </div>
+      <div class="input-group">
+        <label for="taskDueDate">تاريخ التسليم</label>
+        <input type="date" id="taskDueDate" required>
+      </div>
+      <div class="input-group">
+        <label for="taskDesc">التفاصيل والتعليمات</label>
+        <textarea id="taskDesc" placeholder="اكتب تفاصيل التكليف والمطلوب هنا..."></textarea>
+      </div>
+      <button type="submit" class="btn">نشر التكليف</button>
+    </form>
   </div>
 </div>
 
-<!-- Firebase App & Messaging SDKs -->
+<!-- PIN Modal -->
+<div id="pinModal" class="pin-modal hidden">
+  <div class="pin-box">
+    <h3 style="margin-bottom: 15px;">دخول الأدمن</h3>
+    <input type="password" id="adminPinInput" maxlength="4" placeholder="أدخل الرمز السري" style="text-align: center; letter-spacing: 5px; font-size: 1.2rem; margin-bottom: 15px;">
+    <div style="display: flex; gap: 10px;">
+      <button class="btn" onclick="verifyAdminPin()">دخول</button>
+      <button class="btn btn-danger" onclick="closeAdminPinModal()">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -90,7 +262,7 @@
   const firebaseConfig = {
     projectId: "pm2-app-c29fa",
     databaseURL: "https://pm2-6f219-default-rtdb.firebaseio.com",
-    messagingSenderId: "102830842253" // مشتق من مفتاح VAPID للربط التلقائي
+    messagingSenderId: "102830842253"
   };
 
   firebase.initializeApp(firebaseConfig);
@@ -98,72 +270,145 @@
   const messaging = firebase.messaging();
   const db = firebase.database();
   const VAPID_KEY = 'BBxT4h0MXr2gO_ULuUpBAnuHcW6iDXjwYIeZ2oBZUWhyD3tlUpo2BPJaK8_4STIj1Q4d8fPIp5xmPY9OKJ0MVoE';
+  
+  let isAdmin = false;
+  const ADMIN_PIN = "1234";
 
-  // طلب إذن الإشعارات وتسجيل الجهاز
-  async function requestNotificationPermission() {
+  // إدارة الإشعارات
+  async function enableNotifications() {
     try {
       const permission = await Notification.requestPermission();
       if (permission === 'granted') {
-        console.log('تم منح إذن الإشعارات.');
-        
-        // تسجيل Service Worker والتأكد من تفعيله
         const registration = await navigator.serviceWorker.register('firebase-messaging-sw.js');
-        
-        // جلب ה-FCM Token للجهاز
-        const currentToken = await messaging.getToken({
+        const token = await messaging.getToken({
           vapidKey: VAPID_KEY,
           serviceWorkerRegistration: registration
         });
-
-        if (currentToken) {
-          console.log('FCM Token الخاصة بجهازك هي:', currentToken);
-          alert('تم تفعيل الإشعارات بنجاح على جهازك!');
-        } else {
-          console.log('تعذر الحصول على Token. تأكد من إعدادات المتصفح.');
+        
+        if (token) {
+          console.log('FCM Token:', token);
+          alert('تم تفعيل الإشعارات بنجاح على هذا الجهاز!');
+          document.getElementById('notificationBanner').classList.add('hidden');
         }
       } else {
-        alert('لم يتم منح إذن الإشعارات.');
+        alert('يرجى السماح بالإشعارات من إعدادات المتصفح.');
       }
-    } catch (err) {
-      console.error('حدث خطأ أثناء طلب إذن الإشعارات:', err);
+    } catch (error) {
+      console.error('خطأ أثناء تفعيل الإشعارات:', error);
+      alert('حدث خطأ أثناء تفعيل الإشعارات.');
     }
   }
 
-  // الاستماع للإشعارات أثناء فتح التطبيق في الواجهة (Foreground)
+  // استقبال الإشعار أثناء فتح التطبيق
   messaging.onMessage((payload) => {
-    console.log('تم استقبال إشعار في الواجهة:', payload);
-    alert(`إشعار جديد: ${payload.notification.title}\n${payload.notification.body}`);
+    alert(`إشعار جديد:\n${payload.notification.title}\n${payload.notification.body}`);
   });
 
   // قراءة المهام من Realtime Database
   db.ref('tasks').on('value', (snapshot) => {
     const tasks = snapshot.val();
-    const taskListContainer = document.getElementById('taskList');
-    taskListContainer.innerHTML = '';
+    const container = document.getElementById('tasksList');
+    container.innerHTML = '';
 
-    if (tasks) {
-      Object.keys(tasks).forEach((key) => {
-        const task = tasks[key];
-        const taskElement = document.createElement('div');
-        taskElement.className = 'task-item';
-        taskElement.innerHTML = `
-          <div>
-            <strong>${task.title || 'بدون عنوان'}</strong>
-            <br><small style="color: var(--text-muted)">${task.date || ''}</small>
+    if (!tasks) {
+      container.innerHTML = '<p style="text-align: center; color: #94a3b8;">لا توجد تكليفات حالية.</p>';
+      return;
+    }
+
+    Object.keys(tasks).forEach((id) => {
+      const task = tasks[id];
+      const taskDiv = document.createElement('div');
+      taskDiv.className = 'task-card';
+      
+      let adminButtons = '';
+      if (isAdmin) {
+        adminButtons = `
+          <div class="admin-controls">
+            <button class="admin-btn btn-danger" onclick="deleteTask('${id}')">حذف</button>
           </div>
         `;
-        taskListContainer.appendChild(taskElement);
-      });
-    } else {
-      taskListContainer.innerHTML = '<p>لا توجد تكليفات حالية.</p>';
-    }
+      }
+
+      taskDiv.innerHTML = `
+        <div class="task-title">${task.title}</div>
+        <div class="task-date">تاريخ التسليم: ${task.dueDate}</div>
+        <div class="task-desc">${task.description || ''}</div>
+        ${adminButtons}
+      `;
+      container.appendChild(taskDiv);
+    });
   });
 
-  // تسجيل الـ Service Worker عند استدعاء الصفحة
+  // إضافة تكليف جديد
+  function handleTaskSubmit(event) {
+    event.preventDefault();
+    const title = document.getElementById('taskTitle').value;
+    const dueDate = document.getElementById('taskDueDate').value;
+    const description = document.getElementById('taskDesc').value;
+
+    const newTaskRef = db.ref('tasks').push();
+    newTaskRef.set({
+      title: title,
+      dueDate: dueDate,
+      description: description,
+      createdAt: Date.now()
+    }).then(() => {
+      document.getElementById('taskForm').reset();
+      alert('تم نشر التكليف بنجاح!');
+    }).catch((err) => {
+      alert('حدث خطأ أثناء إضافة التكليف: ' + err.message);
+    });
+  }
+
+  // حذف تكليف
+  function deleteTask(id) {
+    if (confirm('هل أنت تأكد من حذف هذا التكليف؟')) {
+      db.ref('tasks/' + id).remove();
+    }
+  }
+
+  // التحقق من رمز الأدمن
+  function openAdminPinModal() {
+    if (isAdmin) {
+      isAdmin = false;
+      document.getElementById('adminPanel').classList.add('hidden');
+      document.getElementById('adminToggleBtn').innerText = 'لوحة الأدمن';
+      db.ref('tasks').emit('value');
+    } else {
+      document.getElementById('pinModal').classList.remove('hidden');
+      document.getElementById('adminPinInput').focus();
+    }
+  }
+
+  function closeAdminPinModal() {
+    document.getElementById('pinModal').classList.add('hidden');
+    document.getElementById('adminPinInput').value = '';
+  }
+
+  function verifyAdminPin() {
+    const input = document.getElementById('adminPinInput').value;
+    if (input === ADMIN_PIN) {
+      isAdmin = true;
+      closeAdminPinModal();
+      document.getElementById('adminPanel').classList.remove('hidden');
+      document.getElementById('adminToggleBtn').innerText = 'الخروج من الأدمن';
+      db.ref('tasks').once('value', snapshot => {
+        const event = new Event('value');
+      });
+      location.reload(); 
+    } else {
+      alert('الرمز السري غير صحيح!');
+      document.getElementById('adminPinInput').value = '';
+    }
+  }
+
+  // تسجيل Service Worker
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('firebase-messaging-sw.js')
-      .then((reg) => console.log('Service Worker شغال بنجاح:', reg.scope))
-      .catch((err) => console.error('فشل تسجيل Service Worker:', err));
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('firebase-messaging-sw.js')
+        .then(reg => console.log('SW Registered:', reg.scope))
+        .catch(err => console.error('SW Fail:', err));
+    });
   }
 </script>
 
