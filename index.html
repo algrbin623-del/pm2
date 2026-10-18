@@ -16,7 +16,7 @@
 
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
   
-  <!-- OneSignal SDK Integration -->
+  <!-- OneSignal SDK -->
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
   <script>
     window.OneSignalDeferred = window.OneSignalDeferred || [];
@@ -33,8 +33,10 @@
     :root {
       --bg-cream: #f7f4ed;
       --card-bg: #ffffff;
-      --card-active-bg: #f4f8ff;
+      --card-active-bg: #ffffff;
+      --card-nearest-bg: rgba(239, 68, 68, 0.06);
       --primary-green: #17382b;
+      --accent-red: #dc2626;
       --accent-blue: #1848b8;
       --accent-teal: #238b72;
       --accent-purple: #6d28d9;
@@ -59,7 +61,7 @@
       direction: rtl; 
     }
 
-    .top-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
+    .top-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
     .header-right { display: flex; align-items: center; gap: 12px; text-align: right; }
     .logo-box { width: 46px; height: 46px; background: #ffffff; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; padding: 4px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
     .logo-box img { width: 100%; height: 100%; object-fit: contain; }
@@ -72,6 +74,69 @@
     .view-pill button { border: none; background: transparent; padding: 4px 8px; border-radius: 16px; cursor: pointer; color: #666; display: flex; align-items: center; justify-content: center; }
     .view-pill button.active { background: var(--primary-green); color: white; }
 
+    /* Main Tab Selector */
+    .main-tabs-nav {
+      display: flex;
+      background: #eae5d9;
+      border-radius: 16px;
+      padding: 4px;
+      margin-bottom: 18px;
+    }
+    .main-tab-btn {
+      flex: 1;
+      border: none;
+      background: transparent;
+      padding: 10px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 800;
+      color: #555;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .main-tab-btn.active {
+      background: var(--primary-green);
+      color: white;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    /* Filter Bar */
+    .filter-bar {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin-bottom: 14px;
+      scrollbar-width: none;
+    }
+    .filter-bar::-webkit-scrollbar { display: none; }
+    .filter-chip {
+      background: #eae5d9;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #444;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .filter-chip.active {
+      background: var(--primary-green);
+      color: white;
+    }
+    .filter-chip-select {
+      background: #eae5d9;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #444;
+      outline: none;
+      cursor: pointer;
+    }
+
     .section-label { font-size: 13.5px; font-weight: 700; color: #444; margin-bottom: 12px; text-align: right; }
 
     .banner-pwa { background: white; border-radius: 18px; padding: 14px 18px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 4px rgba(0,0,0,0.03); }
@@ -82,17 +147,30 @@
     .banner-left-actions a { font-size: 13.5px; font-weight: 800; color: #111; text-decoration: underline; cursor: pointer; }
     .banner-left-actions .close-x { background: none; border: none; font-size: 15px; color: #777; cursor: pointer; }
 
-    .active-card { background: var(--card-active-bg); border-radius: 20px; padding: 16px 18px; margin-bottom: 14px; border: 1px solid #dce8fa; position: relative; transition: all 0.25s ease; }
+    .active-card { 
+      background: var(--card-bg); 
+      border-radius: 20px; 
+      padding: 16px 18px; 
+      margin-bottom: 14px; 
+      border: 1px solid #e5e7eb; 
+      position: relative; 
+      transition: all 0.25s ease; 
+    }
+    .active-card.nearest-card {
+      background: var(--card-nearest-bg);
+      border: 1.5px solid rgba(220, 38, 38, 0.2);
+    }
     .active-card.completed { background: #fcfcfc; border-color: #e5e7eb; opacity: 0.75; }
     .active-card.completed .task-title { text-decoration: line-through; color: #6b7280; }
 
     .card-top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-    .tags-row { display: flex; align-items: center; gap: 8px; }
+    .tags-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
     .badge-kind { color: white; font-size: 11px; font-weight: 700; padding: 3px 12px; border-radius: 12px; }
     .badge-blue { background-color: var(--accent-blue); }
     .badge-teal { background-color: var(--accent-teal); }
     .badge-purple { background-color: var(--accent-purple); }
     .badge-amber { background-color: var(--accent-amber); }
+    .badge-red { background-color: var(--accent-red); }
     .subject-title { font-size: 12.5px; color: var(--text-muted); font-weight: 600; }
 
     .btn-toggle-done {
@@ -133,8 +211,6 @@
       width: fit-content;
       box-shadow: 0 1px 2px rgba(0,0,0,0.03);
     }
-    .attachment-btn:active { background: #dbeafe; }
-
     .author-line { font-size: 12px; color: #888; display: flex; align-items: center; gap: 6px; margin-top: 4px; }
     .card-left-time { text-align: left; min-width: 95px; flex-shrink: 0; }
     .label-near { font-size: 11.5px; font-weight: 800; color: var(--danger); text-align: left; }
@@ -145,7 +221,50 @@
     .actions-left-group { display: flex; align-items: center; gap: 10px; }
     .btn-cal-action { background: none; border: none; color: #0284c7; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; padding: 3px 6px; border-radius: 6px; }
     .btn-delete-task { background: none; border: none; color: #b91c1c; font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 4px; cursor: pointer; padding: 3px 6px; border-radius: 6px; }
-    .expand-arrow { font-size: 13px; color: #8e8e93; cursor: pointer; }
+
+    /* Courses Tab Styles */
+    .courses-container { display: none; flex-direction: column; gap: 12px; }
+    .course-card {
+      background: white;
+      border-radius: 18px;
+      padding: 16px;
+      border: 1px solid #e5e7eb;
+    }
+    .course-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+    }
+    .course-name { font-size: 16px; font-weight: 800; color: #111; }
+    .course-files-count { font-size: 12px; color: #777; font-weight: 600; }
+    .course-files-list {
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px dashed #e2e8f0;
+    }
+    .file-item-card {
+      background: #fbf9f4;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 10px 12px;
+    }
+    .file-item-title { font-size: 13.5px; font-weight: 700; color: #1f2937; margin-bottom: 6px; word-break: break-all; }
+    .file-item-actions { display: flex; gap: 8px; }
+    .btn-file-act {
+      border: none;
+      background: white;
+      border: 1px solid #d1d5db;
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #374151;
+      cursor: pointer;
+    }
 
     .archive-header-row { display: flex; align-items: center; gap: 8px; margin-top: 26px; margin-bottom: 14px; cursor: pointer; color: #374151; font-weight: 700; font-size: 13px; user-select: none; }
     .archive-header-row .arrow-icon { font-size: 13px; color: #6b7280; transition: transform 0.2s ease; display: inline-block; }
@@ -176,9 +295,10 @@
 
     .form-group { margin-bottom: 14px; text-align: right; }
     .form-group label { display: block; font-size: 13px; font-weight: 700; color: #222; margin-bottom: 6px; }
-    .type-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-    .type-btn { background: var(--input-bg); border: none; padding: 11px 0; border-radius: 12px; font-size: 13.5px; font-weight: 700; color: #555; cursor: pointer; }
-    .type-btn.active { background: #173fa7; color: white; }
+    
+    .type-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .type-btn { background: var(--input-bg); border: none; padding: 9px 0; border-radius: 10px; font-size: 12px; font-weight: 700; color: #555; cursor: pointer; }
+    .type-btn.active { background: var(--primary-green); color: white; }
     
     .custom-input, .custom-select, .custom-textarea { 
       width: 100%; 
@@ -186,7 +306,7 @@
       border: 1px solid var(--border-soft); 
       border-radius: 14px; 
       padding: 13px 16px; 
-      font-size: 16px !important; 
+      font-size: 15px !important; 
       color: #222; 
       outline: none; 
     }
@@ -206,7 +326,6 @@
       align-items: center;
       gap: 6px;
     }
-    .file-upload-box:active { background: #f0ece1; }
     .file-upload-icon { font-size: 22px; }
     .file-upload-text { font-size: 13px; font-weight: 700; color: #374151; }
     .file-upload-sub { font-size: 11px; color: #888; }
@@ -244,62 +363,76 @@
     </div>
   </header>
 
-  <div class="section-label" id="activeCounterText">جاري التحميل...</div>
+  <!-- Main Tabs Selector -->
+  <div class="main-tabs-nav">
+    <button class="main-tab-btn active" id="tabAlertsBtn" onclick="switchMainTab('alerts')">التنبيهات</button>
+    <button class="main-tab-btn" id="tabCoursesBtn" onclick="switchMainTab('courses')">المقررات الدراسية</button>
+  </div>
 
-  <div class="banner-pwa" id="iosBanner">
-    <div class="banner-right-content">
-      <span class="bell-icon">🔔</span>
-      <p>لتصلك الإشعارات: ثبّت الموقع<br>على الشاشة الرئيسية</p>
+  <!-- Section: Alerts Tab View -->
+  <div id="alertsTabView">
+    <!-- Filter Chips Bar -->
+    <div class="filter-bar">
+      <button class="filter-chip active" onclick="filterByType(this, 'all')">الكل</button>
+      <button class="filter-chip" onclick="filterByType(this, 'واجب')">واجب</button>
+      <button class="filter-chip" onclick="filterByType(this, 'اختبار')">اختبار</button>
+      <button class="filter-chip" onclick="filterByType(this, 'اختبار نصفي')">اختبار نصفي</button>
+      <button class="filter-chip" onclick="filterByType(this, 'اختبار نهائي')">اختبار نهائي</button>
+      <button class="filter-chip" onclick="filterByType(this, 'مناقشة')">مناقشة</button>
+      <button class="filter-chip" onclick="filterByType(this, 'إعلان')">إعلان</button>
+      <select class="filter-chip-select" id="courseFilterSelect" onchange="filterByCourse(this.value)">
+        <option value="all">كل المواد</option>
+        <option value="محاسبة التكاليف">محاسبة التكاليف</option>
+        <option value="إدارة الامداد والتموين">إدارة الامداد والتموين</option>
+        <option value="إدارة الجودة في المشاريع">إدارة الجودة في المشاريع</option>
+        <option value="إدارة المخاطر في المشاريع">إدارة المخاطر في المشاريع</option>
+        <option value="الإدارة الالكترونية للمشاريع">الإدارة الالكترونية للمشاريع</option>
+        <option value="الجدوى الاقتصادية للمشاريع">الجدوى الاقتصادية للمشاريع</option>
+        <option value="تمويل المشاريع">تمويل المشاريع</option>
+        <option value="مشروع تطبيقي">مشروع تطبيقي</option>
+      </select>
     </div>
-    <div class="banner-left-actions">
-      <a href="javascript:void(0)" onclick="openNotifSheet()">كيف؟</a>
-      <button class="close-x" onclick="document.getElementById('iosBanner').style.display='none'">✕</button>
+
+    <div class="section-label" id="activeCounterText">جاري التحميل...</div>
+
+    <div class="banner-pwa" id="iosBanner">
+      <div class="banner-right-content">
+        <span class="bell-icon">🔔</span>
+        <p>لتصلك الإشعارات: ثبّت الموقع<br>على الشاشة الرئيسية</p>
+      </div>
+      <div class="banner-left-actions">
+        <a href="javascript:void(0)" onclick="openNotifSheet()">كيف؟</a>
+        <button class="close-x" onclick="document.getElementById('iosBanner').style.display='none'">✕</button>
+      </div>
+    </div>
+
+    <div id="tasksList"></div>
+
+    <!-- الأرشيف -->
+    <div class="archive-header-row" onclick="toggleArchive()">
+      <span class="arrow-icon" id="archiveArrow">⌄</span>
+      <span id="archiveTitleText">المنتهية والأرشيف (0)</span>
+    </div>
+
+    <div class="archive-container" id="archiveContainer" style="display: none;">
+      <div id="dynamicArchiveList"></div>
     </div>
   </div>
 
-  <div id="tasksList"></div>
-
-  <!-- الأرشيف -->
-  <div class="archive-header-row" onclick="toggleArchive()">
-    <span class="arrow-icon" id="archiveArrow">⌄</span>
-    <span id="archiveTitleText">المنتهية والأرشيف (1)</span>
-  </div>
-
-  <div class="archive-container" id="archiveContainer" style="display: none;">
-    <div id="dynamicArchiveList"></div>
-
-    <div class="archive-card" id="task-archive-static">
-      <div class="card-flex">
-        <div class="card-right-info">
-          <div class="tags-row">
-            <span class="badge-kind badge-teal">مناقشة</span>
-            <span class="subject-title">إدارة المشاريع</span>
-          </div>
-          <div class="task-title">مناقشة</div>
-          <div class="author-line">بواسطة سالم الشمري</div>
-        </div>
-        <div class="card-left-time">
-          <div class="status-ended">انتهى</div>
-          <div class="ended-time">28 سبتمبر 2026</div>
-        </div>
-      </div>
-      <div class="card-bottom-actions">
-        <span></span>
-        <button class="btn-delete-task" onclick="confirmDelete('task-archive-static', 'مناقشة إدارة المشاريع')">
-          <span>حذف</span> 🗑️
-        </button>
-      </div>
-    </div>
+  <!-- Section: Courses Tab View -->
+  <div id="coursesTabView" style="display: none;">
+    <div class="section-label">محتوى المحاضرات والملفات لكل مادة - اضغط لعرض الملفات</div>
+    <div class="courses-container" id="coursesListContainer" style="display: flex;"></div>
   </div>
 
   <div class="footer-admin-links">
     <a href="javascript:void(0)" onclick="openNotifSheet()">الإشعارات</a>
     <span>•</span>
-    <a href="javascript:void(0)" onclick="openAddModal()">إضافة تنبيه</a>
+    <a href="javascript:void(0)" onclick="openAddModal()">إضافة تنبيه / ملف</a>
   </div>
 
   <div class="floating-btn-wrap">
-    <button class="btn-add-alert" onclick="openAddModal()">+ إضافة تنبيه</button>
+    <button class="btn-add-alert" onclick="openAddModal()">+ إضافة تنبيه أو ملف مادة</button>
   </div>
 
   <!-- نافذة الإشعارات -->
@@ -315,20 +448,12 @@
           جاري التحقق من حالة الإشعارات...
         </p>
 
-        <p style="color:#4b5563; font-weight:600; margin-bottom:10px;">تصلك إشعارات:</p>
+        <p style="color:#4b5563; font-weight:600; margin-bottom:10px;">جدول التنبيهات التلقائية:</p>
         <ul style="list-style:none; padding-right:4px; display:flex; flex-direction:column; gap:8px; color:#374151; font-weight:600; margin-bottom:16px;">
-          <li>• عند نشر تنبيه جديد</li>
-          <li>• قبل الموعد بـ 24 ساعة</li>
-          <li>• قبل الموعد بساعتين</li>
+          <li>• تنبيه فوري عند نشر أي تكليف أو ملخص جديد</li>
+          <li>• الواجبات والمناقشات: تنبيه قبل الموعد بـ 24 ساعة وساعتين</li>
+          <li>• الاختبارات (النصفية والنهائية): تنبيه قبل الاختبار بساعة وبنصف ساعة فقط</li>
         </ul>
-
-        <p style="font-size:12px; color:#777; line-height:1.5; margin-bottom:14px;">
-          قد يتأخر وصول الإشعار بضع دقائق. الموقع يبقى المرجع الأساسي - افتحه للتأكد من التفاصيل.
-        </p>
-
-        <div id="pwaInstructionBox" style="background:#f0ece1; padding:12px; border-radius:12px; font-size:12.5px; color:#555; margin-bottom:12px; display:none;">
-          💡 على iPhone: اضغط زر المشاركة (المربع بسهم ⎋) ثم <strong>«إضافة إلى الشاشة الرئيسية»</strong> لتصلك التنبيهات.
-        </div>
 
         <button class="btn-toggle-notif" id="btnNotifToggle" onclick="handleNotificationToggle()">
           تفعيل الإشعارات على هذا الجهاز
@@ -342,7 +467,7 @@
     <div class="confirm-box">
       <div style="font-size:36px; margin-bottom:10px;">⚠️</div>
       <div class="confirm-title">تأكيد الحذف</div>
-      <div class="confirm-desc" id="confirmMessageText">هل أنت تأكد من رغبتك في حذف هذا التكليف؟</div>
+      <div class="confirm-desc" id="confirmMessageText">هل أنت تأكد من رغبتك في حذف هذا العنصر؟</div>
       <div class="confirm-actions">
         <button class="btn-action-del" id="btnConfirmDelete" onclick="executeDelete()">نعم، احذف</button>
         <button class="btn-action-cancel" onclick="closeConfirmModal()">إلغاء</button>
@@ -350,26 +475,29 @@
     </div>
   </div>
 
-  <!-- نافذة إضافة تنبيه -->
+  <!-- نافذة إضافة تنبيه أو ملف للمادة -->
   <div class="modal-overlay" id="alertModal">
     <div class="modal-sheet">
       <div class="sheet-header">
         <button class="btn-close-circle" onclick="closeAddModal()">✕</button>
-        <div class="sheet-title">إضافة تنبيه</div>
+        <div class="sheet-title">إضافة تنبيه / ملف مادة</div>
       </div>
 
       <div class="form-group">
-        <label>النوع</label>
+        <label>نوع العنصر</label>
         <div class="type-grid">
-          <button type="button" class="type-btn" onclick="selectType(this, 'إعلان')">إعلان</button>
-          <button type="button" class="type-btn" onclick="selectType(this, 'مناقشة')">مناقشة</button>
-          <button type="button" class="type-btn" onclick="selectType(this, 'اختبار')">اختبار</button>
           <button type="button" class="type-btn active" onclick="selectType(this, 'واجب')">واجب</button>
+          <button type="button" class="type-btn" onclick="selectType(this, 'اختبار نصفي')">اختبار نصفي</button>
+          <button type="button" class="type-btn" onclick="selectType(this, 'اختبار نهائي')">اختبار نهائي</button>
+          <button type="button" class="type-btn" onclick="selectType(this, 'اختبار')">اختبار قصيرة</button>
+          <button type="button" class="type-btn" onclick="selectType(this, 'مناقشة')">مناقشة</button>
+          <button type="button" class="type-btn" onclick="selectType(this, 'إعلان')">إعلان</button>
+          <button type="button" class="type-btn" onclick="selectType(this, 'ملف مادة')">📁 ملف للمادة</button>
         </div>
       </div>
 
       <div class="form-group">
-        <label>المادة</label>
+        <label>المادة الأكاديمية</label>
         <select class="custom-select" id="courseSelect">
           <option value="">اختر المادة</option>
           <option value="محاسبة التكاليف">محاسبة التكاليف</option>
@@ -390,33 +518,33 @@
       </div>
 
       <div class="form-group">
-        <label>عنوان مختصر</label>
-        <input type="text" class="custom-input" id="taskTitleInput" placeholder="مثال: واجب 1 / تسليم دراسة حالة">
+        <label>العنوان / اسم الملف</label>
+        <input type="text" class="custom-input" id="taskTitleInput" placeholder="مثال: الاختبار النصفي / المادة كاملة / واجب 1">
       </div>
 
       <div class="form-group">
         <label>تفاصيل إضافية (اختياري)</label>
-        <textarea class="custom-textarea" id="taskDescInput" placeholder="أي تفاصيل أو ملاحظات تفيد الشعبة..."></textarea>
+        <textarea class="custom-textarea" id="taskDescInput" placeholder="أي ملاحظات أو تعليمات إضافية..."></textarea>
       </div>
 
       <div class="form-group">
-        <label>إرفاق ملف التكليف (PDF أو صورة من جهازك)</label>
+        <label>إرفاق ملف (PDF / صورة)</label>
         <input type="file" id="localFileInput" accept=".pdf,image/*" style="display:none" onchange="handleFileSelect(this)">
         <div class="file-upload-box" onclick="document.getElementById('localFileInput').click()">
           <span class="file-upload-icon">📎</span>
           <span class="file-upload-text">اضغط لاختيار ملف من جهازك</span>
-          <span class="file-upload-sub">يدعم PDF والصور حتى 3 ميغابايت</span>
+          <span class="file-upload-sub">يدعم PDF والصور حتى 3.5 ميغابايت</span>
           <div class="selected-filename" id="selectedFileName"></div>
         </div>
       </div>
 
       <div class="form-group">
-        <label>أو ضع رابط خارجي إن وجد (اختياري)</label>
-        <input type="url" class="custom-input" id="taskFileInput" placeholder="https://... رابط دراسة الحالة أو الملف">
+        <label>أو ضع رابط خارجي للملف إن وجد (اختياري)</label>
+        <input type="url" class="custom-input" id="taskFileInput" placeholder="https://... رابط الملف الخارجي">
       </div>
 
-      <div class="form-group">
-        <label>موعد الانتهاء</label>
+      <div class="form-group" id="dateGroupWrapper">
+        <label>موعد الانتهاء / تاريخ الاختبار</label>
         <div class="datetime-row">
           <input type="time" class="custom-input" id="taskTimeInput" value="23:59">
           <input type="date" class="custom-input" id="taskDateInput">
@@ -424,19 +552,64 @@
         <span class="sub-hint">بتوقيت السعودية</span>
       </div>
 
-      <button type="button" class="btn-submit-post" id="btnPublish" onclick="handlePublish()">نشر التنبيه</button>
+      <button type="button" class="btn-submit-post" id="btnPublish" onclick="handlePublish()">نشر العنصر والتنبيه</button>
     </div>
   </div>
 
   <script>
     const DB_URL = "https://pm2-6f219-default-rtdb.firebaseio.com/tasks.json";
+    const TELEGRAM_BOT_TOKEN = '8774104956:AAGioWTioH0L0QSq4ffG-sdGjHVrZQJKSic';
+    const TELEGRAM_CHAT_ID = '@PM2_Taskes';
+
+    const ALL_COURSES = [
+      "الإدارة الالكترونية للمشاريع",
+      "الجدوى الاقتصادية للمشاريع",
+      "تمويل المشاريع",
+      "إدارة الامداد والتموين",
+      "إدارة الجودة في المشاريع",
+      "إدارة المخاطر في المشاريع",
+      "محاسبة التكاليف",
+      "مشروع تطبيقي"
+    ];
 
     let currentTasksList = [];
     let currentType = 'واجب';
+    let activeTypeFilter = 'all';
+    let activeCourseFilter = 'all';
     let itemToDelete = null;
-    let knownTaskIds = new Set();
-    let isFirstLoad = true;
     let uploadedBase64File = "";
+
+    function switchMainTab(tabName) {
+      const alertsView = document.getElementById('alertsTabView');
+      const coursesView = document.getElementById('coursesTabView');
+      const btnAlerts = document.getElementById('tabAlertsBtn');
+      const btnCourses = document.getElementById('tabCoursesBtn');
+
+      if (tabName === 'alerts') {
+        alertsView.style.display = 'block';
+        coursesView.style.display = 'none';
+        btnAlerts.classList.add('active');
+        btnCourses.classList.remove('active');
+      } else {
+        alertsView.style.display = 'none';
+        coursesView.style.display = 'block';
+        btnCourses.classList.add('active');
+        btnAlerts.classList.remove('active');
+        renderCoursesTab();
+      }
+    }
+
+    function filterByType(btnEl, typeVal) {
+      document.querySelectorAll('.filter-chip').forEach(el => el.classList.remove('active'));
+      btnEl.classList.add('active');
+      activeTypeFilter = typeVal;
+      renderTasks();
+    }
+
+    function filterByCourse(courseVal) {
+      activeCourseFilter = courseVal;
+      renderTasks();
+    }
 
     function handleFileSelect(input) {
       const file = input.files[0];
@@ -444,7 +617,7 @@
       if (!file) return;
 
       if (file.size > 3.5 * 1024 * 1024) {
-        alert("حجم الملف أكبر من 3 ميغابايت! يرجى اختيار ملف أصغر أو وضع رابطه.");
+        alert("حجم الملف أكبر من 3.5 ميغابايت! يرجى اختيار ملف أصغر أو وضع رابطه الخارجي.");
         input.value = "";
         uploadedBase64File = "";
         nameEl.style.display = "none";
@@ -454,7 +627,7 @@
       const reader = new FileReader();
       reader.onload = function(e) {
         uploadedBase64File = e.target.result;
-        nameEl.innerText = `✓ تم اختيار: ${file.name} (${Math.round(file.size/1024)} كيلوبايت)`;
+        nameEl.innerText = `✓ تم اختيار: ${file.name} (${Math.round(file.size/1024)} KB)`;
         nameEl.style.display = "block";
       };
       reader.readAsDataURL(file);
@@ -512,96 +685,33 @@
       renderTasks();
     }
 
-    function addToCalendar(id, title, course, dueDateStr) {
-      if (!dueDateStr) {
-        alert("لا يوجد موعد محدد لهذا التكليف.");
-        return;
+    async function sendTelegramNotification(type, course, title, dueDate, description) {
+      let timeNote = "تنبيه قبل 24 ساعة وقبل ساعتين";
+      if (type.includes('اختبار')) {
+        timeNote = "تنبيه قبل الاختبار بساعة وبنصف ساعة";
       }
-      const dueDate = new Date(dueDateStr);
-      const startDate = new Date(dueDate.getTime() - 60 * 60 * 1000);
 
-      const formatICSDate = (d) => {
-        return d.toISOString().replace(/-|:|\.\d+/g, "");
-      };
+      const message = `🚨 *تنبيه جديد: ${type}*\n\n` +
+                      `📚 *المادة:* ${course}\n` +
+                      `📌 *العنوان:* ${title}\n` +
+                      `⏰ *الموعد:* ${dueDate}\n` +
+                      `🔔 *جدولة التنبيهات:* ${timeNote}\n` +
+                      (description ? `📝 *التفاصيل:* ${description}\n\n` : '\n') +
+                      `🔗 [افتح المرجع في التطبيق](https://algrbin623-del.github.io/pm2/)`;
 
-      const icsContent = [
-        "BEGIN:VCALENDAR",
-        "VERSION:2.0",
-        "PRODID:-//الشعبة الثانية//إدارة المشاريع//AR",
-        "BEGIN:VEVENT",
-        `UID:task-${id}@shoba2`,
-        `DTSTAMP:${formatICSDate(new Date())}`,
-        `DTSTART:${formatICSDate(startDate)}`,
-        `DTEND:${formatICSDate(dueDate)}`,
-        `SUMMARY:موعد تسليم: ${title} (${course})`,
-        `DESCRIPTION:تسليم تكليف ${title} لمادة ${course} - الشعبة الثانية`,
-        "BEGIN:VALARM",
-        "TRIGGER:-PT2H",
-        "ACTION:DISPLAY",
-        "DESCRIPTION:تذكير بتسليم التكليف قبل ساعتين",
-        "END:VALARM",
-        "END:VEVENT",
-        "END:VCALENDAR"
-      ].join("\r\n");
-
-      const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
-      const link = document.createElement("a");
-      link.href = window.URL.createObjectURL(blob);
-      link.setAttribute("download", `${title}.ics`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-
-    function updateNotifModalUI() {
-      const titleEl = document.getElementById('notifStatusTitle');
-      const btnEl = document.getElementById('btnNotifToggle');
-      const bellEl = document.getElementById('bellBtn');
-      const isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
-      const pwaBox = document.getElementById('pwaInstructionBox');
-
-      if (pwaBox) pwaBox.style.display = isStandalone ? 'none' : 'block';
-
-      window.OneSignalDeferred = window.OneSignalDeferred || [];
-      OneSignalDeferred.push(async function(OneSignal) {
-        const isPermissionGranted = OneSignal.Notifications.permission;
-        if (isPermissionGranted) {
-          titleEl.innerText = 'الإشعارات مفعلة على هذا الجهاز.';
-          titleEl.style.color = '#1b4d3e';
-          btnEl.innerText = 'تم تفعيل الإشعارات بنجاح ✓';
-          btnEl.style.background = '#d7e8db';
-          btnEl.style.color = '#17382b';
-          if (bellEl) bellEl.classList.add('active-bell');
-        } else {
-          titleEl.innerText = 'الإشعارات غير مفعلة على هذا الجهاز.';
-          titleEl.style.color = '#cf4324';
-          btnEl.innerText = 'تفعيل الإشعارات على هذا الجهاز';
-          btnEl.style.background = '#17382b';
-          btnEl.style.color = '#ffffff';
-          if (bellEl) bellEl.classList.remove('active-bell');
-        }
-      });
-    }
-
-    function handleNotificationToggle() {
-      window.OneSignalDeferred = window.OneSignalDeferred || [];
-      OneSignalDeferred.push(async function(OneSignal) {
-        try {
-          await OneSignal.Notifications.requestPermission();
-          updateNotifModalUI();
-        } catch (err) {
-          console.error('خطأ في تفعيل الإشعارات:', err);
-        }
-      });
-    }
-
-    function openNotifSheet() {
-      updateNotifModalUI();
-      document.getElementById('notifModal').style.display = 'flex';
-    }
-
-    function closeNotifSheet() {
-      document.getElementById('notifModal').style.display = 'none';
+      try {
+        await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: TELEGRAM_CHAT_ID,
+            text: message,
+            parse_mode: 'Markdown'
+          })
+        });
+      } catch (error) {
+        console.error('خطأ في إرسال التليجرام:', error);
+      }
     }
 
     async function fetchCloudTasks() {
@@ -614,15 +724,11 @@
         else if (data && typeof data === 'object') loaded = Object.values(data);
         else loaded = [];
 
-        const currentDataStr = JSON.stringify(currentTasksList);
-        const newDataStr = JSON.stringify(loaded);
-        if (currentDataStr !== newDataStr) {
-          knownTaskIds = new Set(loaded.map(t => t.id));
+        if (JSON.stringify(currentTasksList) !== JSON.stringify(loaded)) {
           currentTasksList = loaded;
           renderTasks();
+          renderCoursesTab();
         }
-        
-        isFirstLoad = false;
       } catch (err) {
         console.error("خطأ جلب البيانات:", err);
       }
@@ -640,13 +746,6 @@
       }
     }
 
-    function formatEndedDate(isoString) {
-      if (!isoString) return 'مؤخراً';
-      const d = new Date(isoString);
-      const months = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
-      return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
-    }
-
     function renderTasks() {
       const activeContainer = document.getElementById('tasksList');
       const archiveDynamic = document.getElementById('dynamicArchiveList');
@@ -657,47 +756,53 @@
       archiveDynamic.innerHTML = '';
 
       const now = Date.now();
-      const activeTasks = [];
-      const expiredTasks = [];
+      let activeTasks = [];
+      let expiredTasks = [];
       const completedSet = new Set(getCompletedTaskIds());
 
-      currentTasksList.forEach(t => {
+      // Filter tasks (exclude 'ملف مادة' from main alerts tab)
+      let alertTasks = currentTasksList.filter(t => t.type !== 'ملف مادة');
+
+      if (activeTypeFilter !== 'all') {
+        alertTasks = alertTasks.filter(t => t.type === activeTypeFilter);
+      }
+      if (activeCourseFilter !== 'all') {
+        alertTasks = alertTasks.filter(t => t.course === activeCourseFilter);
+      }
+
+      alertTasks.forEach(t => {
         if (!t.dueDate) {
           activeTasks.push(t);
         } else {
           const diff = new Date(t.dueDate).getTime() - now;
-          if (diff <= 0) {
-            expiredTasks.push(t);
-          } else {
-            activeTasks.push(t);
-          }
+          if (diff <= 0) expiredTasks.push(t);
+          else activeTasks.push(t);
         }
       });
 
-      const count = activeTasks.length;
-      if (count === 0) counter.innerText = 'لا توجد واجبات نشطة حالياً';
-      else if (count === 1) counter.innerText = 'واجب واحد';
-      else if (count === 2) counter.innerText = 'واجبان';
-      else counter.innerText = `${count} واجبات`;
+      // Sort active tasks by closest due date
+      activeTasks.sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
 
-      const totalArchived = expiredTasks.length + (document.getElementById('task-archive-static') ? 1 : 0);
-      archiveTitle.innerText = `المنتهية والأرشيف (${totalArchived})`;
+      counter.innerText = `${activeTasks.length} تنبيهات نشطة`;
+      archiveTitle.innerText = `المنتهية والأرشيف (${expiredTasks.length})`;
 
       if (activeTasks.length === 0) {
-        activeContainer.innerHTML = '<div style="text-align:center; padding:30px; color:#888; font-size:14px; background:white; border-radius:16px;">لا توجد أي تكليفات نشطة. اضغط بالأسفل لإضافة تنبيه جديد.</div>';
+        activeContainer.innerHTML = '<div style="text-align:center; padding:30px; color:#888; font-size:14px; background:white; border-radius:16px;">لا توجد تنبيهات حالية.</div>';
       }
 
-      activeTasks.forEach((t) => {
+      activeTasks.forEach((t, index) => {
+        const isNearest = index === 0 && !completedSet.has(t.id);
+        
         let badgeColorClass = 'badge-blue';
         if (t.type === 'مناقشة') badgeColorClass = 'badge-teal';
-        else if (t.type === 'اختبار') badgeColorClass = 'badge-purple';
+        else if (t.type.includes('اختبار')) badgeColorClass = 'badge-red';
         else if (t.type === 'إعلان') badgeColorClass = 'badge-amber';
 
         const isDone = completedSet.has(t.id);
         const fileTarget = t.fileData || t.fileUrl;
 
         const card = document.createElement('div');
-        card.className = `active-card ${isDone ? 'completed' : ''}`;
+        card.className = `active-card ${isNearest ? 'nearest-card' : ''} ${isDone ? 'completed' : ''}`;
         card.id = `card-${t.id}`;
         card.innerHTML = `
           <div class="card-top-bar">
@@ -714,15 +819,14 @@
             <div class="card-right-info">
               <div class="task-title">${t.title}</div>
               ${t.desc ? `<div class="task-desc">${t.desc}</div>` : ''}
-              ${fileTarget ? `<button type="button" onclick="openAttachedFile('${t.id}')" class="attachment-btn">📄 فتح / تحميل الملف المرفق</button>` : ''}
-              <div class="author-line">
-                <span>بواسطة ${t.author || 'الشعبة'}</span>
-                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-              </div>
+              ${fileTarget ? `<button type="button" onclick="openAttachedFile('${t.id}')" class="attachment-btn">📄 فتح / تحميل المرفق</button>` : ''}
+              <div class="author-line">بواسطة ${t.author || 'عبدالله'}</div>
             </div>
 
             <div class="card-left-time">
-              <div class="label-near">${isDone ? 'مكتمل' : 'الأقرب'}</div>
+              <div class="label-near" style="${isNearest ? 'color:var(--accent-red); font-weight:900;' : ''}">
+                ${isNearest ? 'الأقرب' : (isDone ? 'مكتمل' : '')}
+              </div>
               <div class="countdown-words" id="remain-words-${t.id}">${isDone ? 'أحسنت 🎉' : 'جاري الحساب...'}</div>
               <div class="digital-clock" id="clock-${t.id}">00:00:00</div>
             </div>
@@ -730,9 +834,6 @@
 
           <div class="card-bottom-actions">
             <div class="actions-left-group">
-              <button class="btn-cal-action" onclick="addToCalendar('${t.id}', '${t.title}', '${t.course}', '${t.dueDate}')">
-                📅 التقويم
-              </button>
               <button class="btn-delete-task" onclick="confirmDelete('${t.id}', '${t.title}')">
                 <span>حذف</span> 🗑️
               </button>
@@ -746,14 +847,13 @@
       expiredTasks.forEach((t) => {
         let badgeColorClass = 'badge-blue';
         if (t.type === 'مناقشة') badgeColorClass = 'badge-teal';
-        else if (t.type === 'اختبار') badgeColorClass = 'badge-purple';
+        else if (t.type.includes('اختبار')) badgeColorClass = 'badge-red';
         else if (t.type === 'إعلان') badgeColorClass = 'badge-amber';
 
         const fileTarget = t.fileData || t.fileUrl;
 
         const card = document.createElement('div');
         card.className = 'archive-card';
-        card.style.marginBottom = '12px';
         card.innerHTML = `
           <div class="card-flex">
             <div class="card-right-info">
@@ -762,12 +862,11 @@
                 <span class="subject-title">${t.course}</span>
               </div>
               <div class="task-title">${t.title}</div>
-              ${fileTarget ? `<button type="button" onclick="openAttachedFile('${t.id}')" class="attachment-btn">📄 فتح / تحميل الملف المرفق</button>` : ''}
-              <div class="author-line">بواسطة ${t.author || 'الشعبة'}</div>
+              ${fileTarget ? `<button type="button" onclick="openAttachedFile('${t.id}')" class="attachment-btn">📄 فتح المرفق</button>` : ''}
+              <div class="author-line">بواسطة ${t.author || 'عبدالله'}</div>
             </div>
             <div class="card-left-time">
               <div class="status-ended">انتهى</div>
-              <div class="ended-time">${formatEndedDate(t.dueDate)}</div>
             </div>
           </div>
           <div class="card-bottom-actions">
@@ -783,21 +882,54 @@
       updateAllTimers();
     }
 
+    function renderCoursesTab() {
+      const container = document.getElementById('coursesListContainer');
+      container.innerHTML = '';
+
+      ALL_COURSES.forEach(courseName => {
+        const courseFiles = currentTasksList.filter(t => t.course === courseName && (t.type === 'ملف مادة' || t.fileData || t.fileUrl));
+
+        const courseCard = document.createElement('div');
+        courseCard.className = 'course-card';
+        courseCard.innerHTML = `
+          <div class="course-header" onclick="toggleCourseFiles('${courseName}')">
+            <div class="course-name">${courseName}</div>
+            <div class="course-files-count">${courseFiles.length} ملفات ⌄</div>
+          </div>
+          <div class="course-files-list" id="course-files-${courseName}">
+            ${courseFiles.length === 0 ? '<p style="font-size:12px; color:#888;">لا توجد ملفات حالياً لهذه المادة.</p>' : ''}
+            ${courseFiles.map(f => `
+              <div class="file-item-card">
+                <div class="file-item-title">📄 ${f.title}</div>
+                <div class="file-item-actions">
+                  <button class="btn-file-act" onclick="openAttachedFile('${f.id}')">فتح / تحميل</button>
+                  <button class="btn-file-act" style="color:#b91c1c;" onclick="confirmDelete('${f.id}', '${f.title}')">حذف</button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+        container.appendChild(courseCard);
+      });
+    }
+
+    function toggleCourseFiles(courseName) {
+      const listEl = document.getElementById(`course-files-${courseName}`);
+      if (listEl) {
+        listEl.style.display = listEl.style.display === 'flex' ? 'none' : 'flex';
+      }
+    }
+
     function updateAllTimers() {
       const now = new Date().getTime();
-      let hasNewlyExpired = false;
       const completedSet = new Set(getCompletedTaskIds());
 
       currentTasksList.forEach(t => {
-        if (!t.dueDate) return;
+        if (!t.dueDate || t.type === 'ملف مادة') return;
         const target = new Date(t.dueDate).getTime();
         const diff = target - now;
 
-        if (diff <= 0) {
-          const activeCard = document.getElementById(`card-${t.id}`);
-          if (activeCard) hasNewlyExpired = true;
-          return;
-        }
+        if (diff <= 0) return;
 
         const days = Math.floor(diff / (1000 * 60 * 60 * 24));
         const hrs = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -819,8 +951,6 @@
           clockEl.innerText = `${pad(totalHrs)}:${pad(mins)}:${pad(secs)}`;
         }
       });
-
-      if (hasNewlyExpired) renderTasks();
     }
 
     setInterval(updateAllTimers, 1000);
@@ -836,15 +966,17 @@
       const timeVal = document.getElementById('taskTimeInput').value || '23:59';
       const btn = document.getElementById('btnPublish');
 
-      if (!course) { alert('يرجى اختيار المادة'); return; }
-      if (!title) { alert('يرجى كتابة عنوان التكليف'); return; }
+      if (!course) { alert('يرجى اختيار المادة الأكاديمية'); return; }
+      if (!title) { alert('يرجى كتابة عنوان التنبيه أو اسم الملف'); return; }
 
       btn.innerText = 'جاري النشر والمزامنة...';
       btn.disabled = true;
 
       let dueIso = '';
-      if (dateVal) dueIso = new Date(`${dateVal}T${timeVal}:00`).toISOString();
-      else dueIso = new Date(Date.now() + 24 * 3600 * 1000).toISOString();
+      if (currentType !== 'ملف مادة') {
+        if (dateVal) dueIso = new Date(`${dateVal}T${timeVal}:00`).toISOString();
+        else dueIso = new Date(Date.now() + 24 * 3600 * 1000).toISOString();
+      }
 
       const newTask = {
         id: 'task-' + Date.now(),
@@ -860,9 +992,14 @@
 
       currentTasksList.unshift(newTask);
       renderTasks();
+      renderCoursesTab();
       await saveCloudTasks(currentTasksList);
 
-      btn.innerText = 'نشر التنبيه';
+      if (currentType !== 'ملف مادة') {
+        sendTelegramNotification(currentType, course, title, dueIso ? new Date(dueIso).toLocaleString('ar-SA') : 'غير محدد', desc);
+      }
+
+      btn.innerText = 'نشر العنصر والتنبيه';
       btn.disabled = false;
       document.getElementById('taskTitleInput').value = '';
       document.getElementById('taskDescInput').value = '';
@@ -890,15 +1027,10 @@
       const btn = document.getElementById('btnConfirmDelete');
       btn.innerText = 'جاري الحذف...';
 
-      if (itemToDelete === 'task-archive-static') {
-        const el = document.getElementById('task-archive-static');
-        if (el) el.remove();
-        renderTasks();
-      } else {
-        currentTasksList = currentTasksList.filter(t => t.id !== itemToDelete);
-        renderTasks();
-        await saveCloudTasks(currentTasksList);
-      }
+      currentTasksList = currentTasksList.filter(t => t.id !== itemToDelete);
+      renderTasks();
+      renderCoursesTab();
+      await saveCloudTasks(currentTasksList);
 
       btn.innerText = 'نعم، احذف';
       closeConfirmModal();
@@ -920,17 +1052,26 @@
       document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       currentType = typeName;
+
+      const dateWrap = document.getElementById('dateGroupWrapper');
+      if (typeName === 'ملف مادة') {
+        dateWrap.style.display = 'none';
+      } else {
+        dateWrap.style.display = 'block';
+      }
     }
 
     function openAddModal() { document.getElementById('alertModal').style.display = 'flex'; }
     function closeAddModal() { document.getElementById('alertModal').style.display = 'none'; }
+
+    function openNotifSheet() { document.getElementById('notifModal').style.display = 'flex'; }
+    function closeNotifSheet() { document.getElementById('notifModal').style.display = 'none'; }
 
     window.addEventListener('DOMContentLoaded', () => {
       const today = new Date().toISOString().split('T')[0];
       const dateInp = document.getElementById('taskDateInput');
       if (dateInp) dateInp.value = today;
 
-      updateNotifModalUI();
       fetchCloudTasks();
     });
   </script>
