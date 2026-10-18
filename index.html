@@ -194,6 +194,7 @@
     .card-right-info { text-align: right; display: flex; flex-direction: column; gap: 4px; flex: 1; padding-left: 10px; }
     .task-title { font-size: 17px; font-weight: 800; color: #111; margin-top: 2px; }
     .task-desc { font-size: 12.5px; color: #4b5563; line-height: 1.4; margin-top: 4px; }
+    .date-display-badge { font-size: 11.5px; font-weight: 700; color: #047857; background: #ecfdf5; border: 1px solid #a7f3d0; padding: 3px 8px; border-radius: 8px; margin-top: 6px; width: fit-content; }
     
     .attachment-btn {
       display: inline-flex;
@@ -654,9 +655,14 @@
     let editingTaskId = null;
     let uploadedBase64File = "";
 
+    /* تحويل التاريخ إلى صيغة ميلادية متكاملة مع اسم اليوم العربي (مثال: الأحد، 2026/10/18 - 06:00 م) */
     function formatGregorianDate(isoStr) {
       if (!isoStr) return 'بدون موعد محدد';
       const d = new Date(isoStr);
+      
+      const daysArabic = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+      const dayName = daysArabic[d.getDay()];
+
       const year = d.getFullYear();
       const month = String(d.getMonth() + 1).padStart(2, '0');
       const day = String(d.getDate()).padStart(2, '0');
@@ -668,7 +674,7 @@
       hours = hours ? hours : 12;
       const strTime = `${String(hours).padStart(2, '0')}:${minutes} ${ampm}`;
 
-      return `${year}/${month}/${day} - ${strTime}`;
+      return `${dayName}، ${year}/${month}/${day} - ${strTime}`;
     }
 
     function checkBannerStatus() {
@@ -974,6 +980,7 @@
         const isDone = completedSet.has(t.id);
         const fileTarget = t.fileData || t.fileUrl;
         const timingPrefix = t.timingMode === 'start' ? 'يبدأ خلال' : 'ينتهي خلال';
+        const formattedDateBadge = formatGregorianDate(t.dueDate);
 
         const card = document.createElement('div');
         card.className = `active-card ${isNearest ? 'nearest-card' : ''} ${isDone ? 'completed' : ''}`;
@@ -993,6 +1000,7 @@
             <div class="card-right-info">
               <div class="task-title">${t.title}</div>
               ${t.desc ? `<div class="task-desc">${t.desc}</div>` : ''}
+              ${t.dueDate ? `<div class="date-display-badge">📅 ${formattedDateBadge}</div>` : ''}
               ${fileTarget ? `<button type="button" onclick="openAttachedFile('${t.id}')" class="attachment-btn">📄 فتح / تحميل المرفق</button>` : ''}
               <div class="author-line">بواسطة ${t.author || 'عبدالله'}</div>
             </div>
@@ -1028,6 +1036,7 @@
         else if (t.type === 'إعلان') badgeColorClass = 'badge-amber';
 
         const fileTarget = t.fileData || t.fileUrl;
+        const formattedDateBadge = formatGregorianDate(t.dueDate);
 
         const card = document.createElement('div');
         card.className = 'archive-card';
@@ -1039,6 +1048,7 @@
                 <span class="subject-title">${t.course}</span>
               </div>
               <div class="task-title">${t.title}</div>
+              ${t.dueDate ? `<div class="date-display-badge">📅 ${formattedDateBadge}</div>` : ''}
               ${fileTarget ? `<button type="button" onclick="openAttachedFile('${t.id}')" class="attachment-btn">📄 فتح المرفق</button>` : ''}
               <div class="author-line">بواسطة ${t.author || 'عبدالله'}</div>
             </div>
@@ -1141,7 +1151,6 @@
     setInterval(updateAllTimers, 1000);
     setInterval(fetchCloudTasks, 15000);
 
-    /* وظائف نافذة التعديل الذكية */
     function openEditModal(taskId) {
       const task = currentTasksList.find(t => t.id === taskId);
       if (!task) return;
