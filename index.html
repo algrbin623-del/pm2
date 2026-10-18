@@ -61,12 +61,12 @@
       direction: rtl; 
     }
 
-    .top-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+    .top-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
     .header-right { display: flex; align-items: center; gap: 12px; text-align: right; }
-    .logo-box { width: 46px; height: 46px; background: #ffffff; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; padding: 4px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+    .logo-box { width: 48px; height: 48px; background: #ffffff; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; padding: 4px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
     .logo-box img { width: 100%; height: 100%; object-fit: contain; }
-    .header-text .diploma-tag { font-size: 11px; color: #7b7b7b; font-weight: 700; display: block; margin-bottom: 2px; }
-    .header-text .group-title { font-size: 22px; font-weight: 800; color: var(--primary-green); line-height: 1.1; }
+    .header-text .diploma-tag { font-size: 12px; color: #666; font-weight: 700; display: block; margin-bottom: 6px; }
+    .header-text .group-title { font-size: 23px; font-weight: 800; color: var(--primary-green); line-height: 1.35; }
     .header-left-actions { display: flex; align-items: center; gap: 8px; }
     .icon-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--btn-gray); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #333; }
     .icon-btn.active-bell { color: #17382b; background: #d7e8db; }
@@ -412,7 +412,7 @@
       </div>
       <div class="banner-left-actions">
         <a href="javascript:void(0)" onclick="openNotifSheet()">كيف؟</a>
-        <button class="close-x" onclick="document.getElementById('iosBanner').style.display='none'">✕</button>
+        <button class="close-x" onclick="dismissBannerPermanently()">✕</button>
       </div>
     </div>
 
@@ -559,7 +559,7 @@
       </div>
 
       <div class="form-group" id="dateGroupWrapper">
-        <label id="dateGroupTitle">موعد الانتهاء أو تاريخ الاختيار</label>
+        <label id="dateGroupTitle">موعد الانتهاء أو تاريخ الاختبار</label>
         
         <!-- Mode selector: End / Start -->
         <div class="mode-toggle-grid" id="timingModeGrid">
@@ -601,6 +601,39 @@
     let activeCourseFilter = 'all';
     let itemToDelete = null;
     let uploadedBase64File = "";
+
+    /* تحويل التاريخ إلى صيغة ميلادية واضحة ومقروءة YYYY/MM/DD */
+    function formatGregorianDate(isoStr) {
+      if (!isoStr) return 'بدون موعد محدد';
+      const d = new Date(isoStr);
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      
+      let hours = d.getHours();
+      const minutes = String(d.getMinutes()).padStart(2, '0');
+      const ampm = hours >= 12 ? 'م' : 'ص';
+      hours = hours % 12;
+      hours = hours ? hours : 12; // الساعة 0 تصبح 12
+      const strTime = `${String(hours).padStart(2, '0')}:${minutes} ${ampm}`;
+
+      return `${year}/${month}/${day} - ${strTime}`;
+    }
+
+    /* حجب شريط تثبيت التطبيق نهائياً للمستخدم الحاضر عند الضغط على الحذف */
+    function checkBannerStatus() {
+      const dismissed = localStorage.getItem('pwa_banner_dismissed');
+      if (dismissed === 'true') {
+        const banner = document.getElementById('iosBanner');
+        if (banner) banner.style.display = 'none';
+      }
+    }
+
+    function dismissBannerPermanently() {
+      localStorage.setItem('pwa_banner_dismissed', 'true');
+      const banner = document.getElementById('iosBanner');
+      if (banner) banner.style.display = 'none';
+    }
 
     function switchMainTab(tabName) {
       const alertsView = document.getElementById('alertsTabView');
@@ -708,7 +741,7 @@
       renderTasks();
     }
 
-    /* ارسال رسائل التليجرام بتنسيق كود برمجي إلكتروني صريح */
+    /* ارسال رسائل التليجرام بتنسيق صريح وبصيغة ميلادية */
     async function sendRawTelegramMsg(message) {
       try {
         await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
@@ -736,7 +769,7 @@
       sendRawTelegramMsg(msg);
     }
 
-    /* محرك التنبيهات المجدولة الآلي (24 ساعة / ساعتين / ساعة / نصف ساعة) */
+    /* محرك التنبيهات المجدولة الآلي بصيغ التارخ الميلادي */
     function checkScheduledAlerts() {
       const now = Date.now();
       let updated = false;
@@ -748,10 +781,10 @@
         const diffMins = Math.floor((target - now) / (1000 * 60));
         if (!t.sentAlerts) t.sentAlerts = {};
 
-        const displayDate = new Date(t.dueDate).toLocaleString('ar-SA');
+        const displayDate = formatGregorianDate(t.dueDate);
 
         if (t.timingMode === 'end') {
-          // الانتهاء بعد 24 ساعة (بين 23.5 ساعة و24 ساعة)
+          // الانتهاء بعد 24 ساعة
           if (diffMins <= 1440 && diffMins > 1410 && !t.sentAlerts['24h']) {
             t.sentAlerts['24h'] = true;
             updated = true;
@@ -763,7 +796,7 @@
                         `🔗 [افتح المرجع في التطبيق](https://algrbin623-del.github.io/pm2/)`;
             sendRawTelegramMsg(msg);
           }
-          // الانتهاء بعد ساعتين (بين نصف ساعة وساعتين)
+          // الانتهاء بعد ساعتين
           if (diffMins <= 120 && diffMins > 30 && !t.sentAlerts['2h']) {
             t.sentAlerts['2h'] = true;
             updated = true;
@@ -776,7 +809,7 @@
             sendRawTelegramMsg(msg);
           }
         } else if (t.timingMode === 'start') {
-          // البدء بعد ساعة (بين 35 دقيقة و60 دقيقة)
+          // البدء بعد ساعة
           if (diffMins <= 60 && diffMins > 35 && !t.sentAlerts['1h']) {
             t.sentAlerts['1h'] = true;
             updated = true;
@@ -788,7 +821,7 @@
                         `🔗 [افتح المرجع في التطبيق](https://algrbin623-del.github.io/pm2/)`;
             sendRawTelegramMsg(msg);
           }
-          // البدء بعد نصف ساعة (بين دقيقة و30 دقيقة)
+          // البدء بعد نصف ساعة
           if (diffMins <= 30 && diffMins > 0 && !t.sentAlerts['30m']) {
             t.sentAlerts['30m'] = true;
             updated = true;
@@ -1102,7 +1135,7 @@
       await saveCloudTasks(currentTasksList);
 
       if (currentType !== 'ملف مادة') {
-        const displayDateText = dueIso ? new Date(dueIso).toLocaleString('ar-SA') : 'بدون موعد محدد';
+        const displayDateText = formatGregorianDate(dueIso);
         sendPublishNotification(currentType, course, title, displayDateText, desc, currentTimingMode);
       }
 
@@ -1207,6 +1240,7 @@
     function closeNotifSheet() { document.getElementById('notifModal').style.display = 'none'; }
 
     window.addEventListener('DOMContentLoaded', () => {
+      checkBannerStatus();
       const today = new Date().toISOString().split('T')[0];
       const dateInp = document.getElementById('taskDateInput');
       if (dateInp) dateInp.value = today;
