@@ -297,6 +297,19 @@
     .type-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
     .type-btn { background: var(--input-bg); border: none; padding: 9px 0; border-radius: 10px; font-size: 12px; font-weight: 700; color: #555; cursor: pointer; }
     .type-btn.active { background: var(--primary-green); color: white; }
+
+    /* Mode selector: End / Start */
+    .mode-toggle-grid { display: flex; gap: 8px; margin-bottom: 8px; }
+    .mode-btn { flex: 1; background: var(--input-bg); border: 1px solid var(--border-soft); padding: 8px 0; border-radius: 10px; font-size: 12px; font-weight: 700; color: #555; cursor: pointer; }
+    .mode-btn.active { background: #1848b8; color: white; border-color: #1848b8; }
+
+    /* Announcement time toggle option */
+    .announcement-toggle-box {
+      display: flex; align-items: center; justify-content: space-between;
+      background: #eae5d9; padding: 10px 14px; border-radius: 12px; margin-bottom: 10px;
+    }
+    .announcement-toggle-box label { font-size: 12.5px; font-weight: 700; color: #333; margin: 0; }
+    .announcement-toggle-box input { width: 18px; height: 18px; accent-color: var(--primary-green); cursor: pointer; }
     
     .custom-input, .custom-select, .custom-textarea { 
       width: 100%; 
@@ -444,11 +457,11 @@
           الإشعارات التلقائية عبر التليجرام
         </p>
 
-        <p style="color:#4b5563; font-weight:600; margin-bottom:10px;">جدول التنبيهات:</p>
+        <p style="color:#4b5563; font-weight:600; margin-bottom:10px;">جدول التنبيهات المعتمد:</p>
         <ul style="list-style:none; padding-right:4px; display:flex; flex-direction:column; gap:8px; color:#374151; font-weight:600; margin-bottom:16px;">
-          <li>• تنبيه فوري عند نشر أي تنبيه جديد أو إعلان</li>
-          <li>• الواجبات والمناقشات: تنبيه قبل الموعد بـ 24 ساعة وساعتين</li>
-          <li>• الاختبارات (النصفية والنهائية): تنبيه قبل الاختبار بساعة وبنصف ساعة فقط</li>
+          <li>• الإعلانات والملفات: إشعار فوري عند النشر</li>
+          <li>• الواجبات والمناقشات: تنبيه الانتهاء بعد 24 ساعة والتنبيه الثاني الانتهاء بعد ساعتين</li>
+          <li>• الاختبارات (القصيرة، النصفية، النهائية): تنبيه البدء بعد ساعة والتنبيه الثاني البدء بعد نصف ساعة</li>
         </ul>
 
         <button class="btn-toggle-notif" id="btnNotifToggle" onclick="closeNotifSheet()">
@@ -485,7 +498,7 @@
           <button type="button" class="type-btn active" onclick="selectType(this, 'واجب')">واجب</button>
           <button type="button" class="type-btn" onclick="selectType(this, 'اختبار نصفي')">اختبار نصفي</button>
           <button type="button" class="type-btn" onclick="selectType(this, 'اختبار نهائي')">اختبار نهائي</button>
-          <button type="button" class="type-btn" onclick="selectType(this, 'اختبار')">اختبار قصيرة</button>
+          <button type="button" class="type-btn" onclick="selectType(this, 'اختبار')">اختبار قصير</button>
           <button type="button" class="type-btn" onclick="selectType(this, 'مناقشة')">مناقشة</button>
           <button type="button" class="type-btn" onclick="selectType(this, 'إعلان')">إعلان</button>
           <button type="button" class="type-btn" onclick="selectType(this, 'ملف مادة')">📁 ملف للمادة</button>
@@ -539,8 +552,21 @@
         <input type="url" class="custom-input" id="taskFileInput" placeholder="https://... رابط الملف الخارجي">
       </div>
 
+      <!-- Annoucement Checkbox Box -->
+      <div class="announcement-toggle-box" id="announcementToggleWrapper" style="display: none;">
+        <label for="enableAnnouncementDate">تحديد تاريخ ووقت للإعلان؟</label>
+        <input type="checkbox" id="enableAnnouncementDate" onchange="toggleAnnouncementDateInput(this.checked)">
+      </div>
+
       <div class="form-group" id="dateGroupWrapper">
-        <label>موعد الانتهاء / تاريخ الاختبار (اختياري للإعلانات)</label>
+        <label id="dateGroupTitle">موعد الانتهاء أو تاريخ الاختيار</label>
+        
+        <!-- Mode selector: End / Start -->
+        <div class="mode-toggle-grid" id="timingModeGrid">
+          <button type="button" class="mode-btn active" id="btnModeEnd" onclick="selectTimeMode('end')">موعد انتهاء ⏳</button>
+          <button type="button" class="mode-btn" id="btnModeStart" onclick="selectTimeMode('start')">موعد بدء 🚀</button>
+        </div>
+
         <div class="datetime-row">
           <input type="time" class="custom-input" id="taskTimeInput" value="23:59">
           <input type="date" class="custom-input" id="taskDateInput">
@@ -570,6 +596,7 @@
 
     let currentTasksList = [];
     let currentType = 'واجب';
+    let currentTimingMode = 'end'; // 'end' or 'start'
     let activeTypeFilter = 'all';
     let activeCourseFilter = 'all';
     let itemToDelete = null;
@@ -681,19 +708,22 @@
       renderTasks();
     }
 
-    async function sendTelegramNotification(type, course, title, dueDateText, description) {
-      let timeNote = "تنبيه قبل 24 ساعة وقبل ساعتين";
+    async function sendTelegramNotification(type, course, title, dueDateText, description, timingMode) {
+      let timeNote = "الانتهاء بعد 24 ساعة والنوع الثاني الانتهاء بعد ساعتين";
+      
       if (type.includes('اختبار')) {
-        timeNote = "تنبيه قبل الاختبار بساعة وبنصف ساعة";
+        timeNote = "البدء بعد ساعة والنوع الثاني البدء بعد نصف ساعة";
       } else if (type === 'إعلان') {
         timeNote = "إشعار فوري";
       }
 
+      const dateLabel = timingMode === 'start' ? '🚀 موعد البدء:' : '⏰ موعد الانتهاء:';
+
       const message = `🚨 *تنبيه جديد: ${type}*\n\n` +
                       `📚 *المادة:* ${course}\n` +
                       `📌 *العنوان:* ${title}\n` +
-                      `⏰ *الموعد:* ${dueDateText}\n` +
-                      `🔔 *نوع التنبيه:* ${timeNote}\n` +
+                      `${dateLabel} ${dueDateText}\n` +
+                      `🔔 *جدول التنبيهات:* ${timeNote}\n` +
                       (description ? `📝 *التفاصيل:* ${description}\n\n` : '\n') +
                       `🔗 [افتح المرجع في التطبيق](https://algrbin623-del.github.io/pm2/)`;
 
@@ -800,6 +830,7 @@
 
         const isDone = completedSet.has(t.id);
         const fileTarget = t.fileData || t.fileUrl;
+        const timingPrefix = t.timingMode === 'start' ? 'يبدأ خلال' : 'ينتهي خلال';
 
         const card = document.createElement('div');
         card.className = `active-card ${isNearest ? 'nearest-card' : ''} ${isDone ? 'completed' : ''}`;
@@ -827,7 +858,7 @@
               <div class="label-near" style="${isNearest ? 'color:var(--accent-red); font-weight:900;' : ''}">
                 ${isNearest ? 'الأقرب' : (isDone ? 'مكتمل' : '')}
               </div>
-              <div class="countdown-words" id="remain-words-${t.id}">${isDone ? 'أحسنت 🎉' : (t.dueDate ? 'جاري الحساب...' : 'بدون موعد')}</div>
+              <div class="countdown-words" id="remain-words-${t.id}">${isDone ? 'أحسنت 🎉' : (t.dueDate ? timingPrefix : 'بدون موعد')}</div>
               <div class="digital-clock" id="clock-${t.id}">${t.dueDate ? '00:00:00' : '--:--:--'}</div>
             </div>
           </div>
@@ -943,8 +974,9 @@
         const clockEl = document.getElementById(`clock-${t.id}`);
 
         if (wordsEl && !completedSet.has(t.id)) {
-          if (days >= 1) wordsEl.innerText = `باقي ${days} يوم`;
-          else wordsEl.innerText = `باقي ${hrs} ساعات`;
+          const prefix = t.timingMode === 'start' ? 'بدء خلال' : 'باقي';
+          if (days >= 1) wordsEl.innerText = `${prefix} ${days} يوم`;
+          else wordsEl.innerText = `${prefix} ${hrs} ساعات`;
         }
 
         if (clockEl) {
@@ -973,8 +1005,13 @@
       btn.disabled = true;
 
       let dueIso = '';
-      if (currentType !== 'ملف مادة' && dateVal) {
-        dueIso = new Date(`${dateVal}T${timeVal}:00`).toISOString();
+      if (currentType !== 'ملف مادة') {
+        if (currentType === 'إعلان') {
+          const isCheck = document.getElementById('enableAnnouncementDate').checked;
+          if (isCheck && dateVal) dueIso = new Date(`${dateVal}T${timeVal}:00`).toISOString();
+        } else if (dateVal) {
+          dueIso = new Date(`${dateVal}T${timeVal}:00`).toISOString();
+        }
       }
 
       const newTask = {
@@ -986,7 +1023,8 @@
         fileUrl: fileUrl,
         fileData: uploadedBase64File || '',
         author: author,
-        dueDate: dueIso
+        dueDate: dueIso,
+        timingMode: currentTimingMode
       };
 
       currentTasksList.unshift(newTask);
@@ -996,7 +1034,7 @@
 
       if (currentType !== 'ملف مادة') {
         const displayDateText = dueIso ? new Date(dueIso).toLocaleString('ar-SA') : 'بدون موعد محدد';
-        sendTelegramNotification(currentType, course, title, displayDateText, desc);
+        sendTelegramNotification(currentType, course, title, displayDateText, desc, currentTimingMode);
       }
 
       btn.innerText = 'نشر العنصر والتنبيه';
@@ -1048,16 +1086,48 @@
       }
     }
 
+    function selectTimeMode(mode) {
+      currentTimingMode = mode;
+      const bEnd = document.getElementById('btnModeEnd');
+      const bStart = document.getElementById('btnModeStart');
+      if (mode === 'end') {
+        bEnd.classList.add('active');
+        bStart.classList.remove('active');
+      } else {
+        bStart.classList.add('active');
+        bEnd.classList.remove('active');
+      }
+    }
+
+    function toggleAnnouncementDateInput(checked) {
+      const dateWrap = document.getElementById('dateGroupWrapper');
+      dateWrap.style.display = checked ? 'block' : 'none';
+    }
+
     function selectType(btn, typeName) {
       document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       currentType = typeName;
 
       const dateWrap = document.getElementById('dateGroupWrapper');
+      const annToggleWrapper = document.getElementById('announcementToggleWrapper');
+
       if (typeName === 'ملف مادة') {
         dateWrap.style.display = 'none';
+        annToggleWrapper.style.display = 'none';
+      } else if (typeName === 'إعلان') {
+        annToggleWrapper.style.display = 'flex';
+        document.getElementById('enableAnnouncementDate').checked = false;
+        dateWrap.style.display = 'none';
       } else {
+        annToggleWrapper.style.display = 'none';
         dateWrap.style.display = 'block';
+
+        if (typeName.includes('اختبار')) {
+          selectTimeMode('start');
+        } else {
+          selectTimeMode('end');
+        }
       }
     }
 
