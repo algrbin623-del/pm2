@@ -219,7 +219,6 @@
 
     .card-bottom-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 6px; border-top: 1px dashed rgba(0,0,0,0.06); }
     .actions-left-group { display: flex; align-items: center; gap: 10px; }
-    .btn-cal-action { background: none; border: none; color: #0284c7; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; padding: 3px 6px; border-radius: 6px; }
     .btn-delete-task { background: none; border: none; color: #b91c1c; font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 4px; cursor: pointer; padding: 3px 6px; border-radius: 6px; }
 
     /* Courses Tab Styles */
@@ -272,7 +271,6 @@
     .archive-container { display: none; flex-direction: column; gap: 12px; }
     .archive-card { background: #ffffff; border-radius: 18px; padding: 16px 18px; box-shadow: 0 1px 4px rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.03); }
     .status-ended { font-size: 12px; font-weight: 700; color: #888; text-align: left; }
-    .ended-time { font-size: 11px; color: #aaa; margin-top: 2px; text-align: left; }
 
     .footer-admin-links { display: flex; justify-content: center; gap: 16px; font-size: 13px; color: #71717a; font-weight: 600; margin-top: 40px; }
     .footer-admin-links a { color: #71717a; text-decoration: none; cursor: pointer; }
@@ -371,7 +369,6 @@
 
   <!-- Section: Alerts Tab View -->
   <div id="alertsTabView">
-    <!-- Filter Chips Bar -->
     <div class="filter-bar">
       <button class="filter-chip active" onclick="filterByType(this, 'all')">الكل</button>
       <button class="filter-chip" onclick="filterByType(this, 'واجب')">واجب</button>
@@ -408,7 +405,6 @@
 
     <div id="tasksList"></div>
 
-    <!-- الأرشيف -->
     <div class="archive-header-row" onclick="toggleArchive()">
       <span class="arrow-icon" id="archiveArrow">⌄</span>
       <span id="archiveTitleText">المنتهية والأرشيف (0)</span>
@@ -435,7 +431,7 @@
     <button class="btn-add-alert" onclick="openAddModal()">+ إضافة تنبيه أو ملف مادة</button>
   </div>
 
-  <!-- نافذة الإشعارات -->
+  <!-- Modal: Notifications -->
   <div class="modal-overlay" id="notifModal">
     <div class="modal-sheet">
       <div class="sheet-header">
@@ -445,24 +441,24 @@
 
       <div style="text-align:right; font-size:14px; line-height:1.7;">
         <p style="font-size:15px; font-weight:800; color:#111; margin-bottom:12px;" id="notifStatusTitle">
-          جاري التحقق من حالة الإشعارات...
+          الإشعارات التلقائية عبر التليجرام
         </p>
 
-        <p style="color:#4b5563; font-weight:600; margin-bottom:10px;">جدول التنبيهات التلقائية:</p>
+        <p style="color:#4b5563; font-weight:600; margin-bottom:10px;">جدول التنبيهات:</p>
         <ul style="list-style:none; padding-right:4px; display:flex; flex-direction:column; gap:8px; color:#374151; font-weight:600; margin-bottom:16px;">
-          <li>• تنبيه فوري عند نشر أي تكليف أو ملخص جديد</li>
+          <li>• تنبيه فوري عند نشر أي تنبيه جديد أو إعلان</li>
           <li>• الواجبات والمناقشات: تنبيه قبل الموعد بـ 24 ساعة وساعتين</li>
           <li>• الاختبارات (النصفية والنهائية): تنبيه قبل الاختبار بساعة وبنصف ساعة فقط</li>
         </ul>
 
-        <button class="btn-toggle-notif" id="btnNotifToggle" onclick="handleNotificationToggle()">
-          تفعيل الإشعارات على هذا الجهاز
+        <button class="btn-toggle-notif" id="btnNotifToggle" onclick="closeNotifSheet()">
+          تم الفهم ✓
         </button>
       </div>
     </div>
   </div>
 
-  <!-- نافذة تأكيد الحذف -->
+  <!-- Modal: Delete Confirmation -->
   <div class="modal-overlay" id="confirmModal" style="display:none; align-items:center; justify-content:center;">
     <div class="confirm-box">
       <div style="font-size:36px; margin-bottom:10px;">⚠️</div>
@@ -475,7 +471,7 @@
     </div>
   </div>
 
-  <!-- نافذة إضافة تنبيه أو ملف للمادة -->
+  <!-- Modal: Add Item -->
   <div class="modal-overlay" id="alertModal">
     <div class="modal-sheet">
       <div class="sheet-header">
@@ -544,7 +540,7 @@
       </div>
 
       <div class="form-group" id="dateGroupWrapper">
-        <label>موعد الانتهاء / تاريخ الاختبار</label>
+        <label>موعد الانتهاء / تاريخ الاختبار (اختياري للإعلانات)</label>
         <div class="datetime-row">
           <input type="time" class="custom-input" id="taskTimeInput" value="23:59">
           <input type="date" class="custom-input" id="taskDateInput">
@@ -685,17 +681,19 @@
       renderTasks();
     }
 
-    async function sendTelegramNotification(type, course, title, dueDate, description) {
+    async function sendTelegramNotification(type, course, title, dueDateText, description) {
       let timeNote = "تنبيه قبل 24 ساعة وقبل ساعتين";
       if (type.includes('اختبار')) {
         timeNote = "تنبيه قبل الاختبار بساعة وبنصف ساعة";
+      } else if (type === 'إعلان') {
+        timeNote = "إشعار فوري";
       }
 
       const message = `🚨 *تنبيه جديد: ${type}*\n\n` +
                       `📚 *المادة:* ${course}\n` +
                       `📌 *العنوان:* ${title}\n` +
-                      `⏰ *الموعد:* ${dueDate}\n` +
-                      `🔔 *جدولة التنبيهات:* ${timeNote}\n` +
+                      `⏰ *الموعد:* ${dueDateText}\n` +
+                      `🔔 *نوع التنبيه:* ${timeNote}\n` +
                       (description ? `📝 *التفاصيل:* ${description}\n\n` : '\n') +
                       `🔗 [افتح المرجع في التطبيق](https://algrbin623-del.github.io/pm2/)`;
 
@@ -760,7 +758,6 @@
       let expiredTasks = [];
       const completedSet = new Set(getCompletedTaskIds());
 
-      // Filter tasks (exclude 'ملف مادة' from main alerts tab)
       let alertTasks = currentTasksList.filter(t => t.type !== 'ملف مادة');
 
       if (activeTypeFilter !== 'all') {
@@ -780,8 +777,11 @@
         }
       });
 
-      // Sort active tasks by closest due date
-      activeTasks.sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+      activeTasks.sort((a, b) => {
+        if (!a.dueDate) return 1;
+        if (!b.dueDate) return -1;
+        return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+      });
 
       counter.innerText = `${activeTasks.length} تنبيهات نشطة`;
       archiveTitle.innerText = `المنتهية والأرشيف (${expiredTasks.length})`;
@@ -791,7 +791,7 @@
       }
 
       activeTasks.forEach((t, index) => {
-        const isNearest = index === 0 && !completedSet.has(t.id);
+        const isNearest = index === 0 && t.dueDate && !completedSet.has(t.id);
         
         let badgeColorClass = 'badge-blue';
         if (t.type === 'مناقشة') badgeColorClass = 'badge-teal';
@@ -827,8 +827,8 @@
               <div class="label-near" style="${isNearest ? 'color:var(--accent-red); font-weight:900;' : ''}">
                 ${isNearest ? 'الأقرب' : (isDone ? 'مكتمل' : '')}
               </div>
-              <div class="countdown-words" id="remain-words-${t.id}">${isDone ? 'أحسنت 🎉' : 'جاري الحساب...'}</div>
-              <div class="digital-clock" id="clock-${t.id}">00:00:00</div>
+              <div class="countdown-words" id="remain-words-${t.id}">${isDone ? 'أحسنت 🎉' : (t.dueDate ? 'جاري الحساب...' : 'بدون موعد')}</div>
+              <div class="digital-clock" id="clock-${t.id}">${t.dueDate ? '00:00:00' : '--:--:--'}</div>
             </div>
           </div>
 
@@ -973,9 +973,8 @@
       btn.disabled = true;
 
       let dueIso = '';
-      if (currentType !== 'ملف مادة') {
-        if (dateVal) dueIso = new Date(`${dateVal}T${timeVal}:00`).toISOString();
-        else dueIso = new Date(Date.now() + 24 * 3600 * 1000).toISOString();
+      if (currentType !== 'ملف مادة' && dateVal) {
+        dueIso = new Date(`${dateVal}T${timeVal}:00`).toISOString();
       }
 
       const newTask = {
@@ -996,7 +995,8 @@
       await saveCloudTasks(currentTasksList);
 
       if (currentType !== 'ملف مادة') {
-        sendTelegramNotification(currentType, course, title, dueIso ? new Date(dueIso).toLocaleString('ar-SA') : 'غير محدد', desc);
+        const displayDateText = dueIso ? new Date(dueIso).toLocaleString('ar-SA') : 'بدون موعد محدد';
+        sendTelegramNotification(currentType, course, title, displayDateText, desc);
       }
 
       btn.innerText = 'نشر العنصر والتنبيه';
