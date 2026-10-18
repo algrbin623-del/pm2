@@ -457,11 +457,11 @@
           الإشعارات التلقائية عبر التليجرام
         </p>
 
-        <p style="color:#4b5563; font-weight:600; margin-bottom:10px;">جدول التنبيهات المعتمد:</p>
+        <p style="color:#4b5563; font-weight:600; margin-bottom:10px;">جدول التنبيهات الإلكتروني الآلي:</p>
         <ul style="list-style:none; padding-right:4px; display:flex; flex-direction:column; gap:8px; color:#374151; font-weight:600; margin-bottom:16px;">
-          <li>• الإعلانات والملفات: إشعار فوري عند النشر</li>
-          <li>• الواجبات والمناقشات: تنبيه الانتهاء بعد 24 ساعة والتنبيه الثاني الانتهاء بعد ساعتين</li>
-          <li>• الاختبارات (القصيرة، النصفية، النهائية): تنبيه البدء بعد ساعة والتنبيه الثاني البدء بعد نصف ساعة</li>
+          <li>• تنبيه فوري عند نشر أي تنبيه أو إعلان جديد</li>
+          <li>• الواجبات والمناقشات: إرسال تنبيه قبل الموعد بـ 24 ساعة ثم تنبيه عاجل قبل الموعد بساعتين</li>
+          <li>• الاختبارات: إرسال تنبيه قبل الاختبار بساعة ثم تنبيه عاجل قبل الاختبار بنصف ساعة</li>
         </ul>
 
         <button class="btn-toggle-notif" id="btnNotifToggle" onclick="closeNotifSheet()">
@@ -596,7 +596,7 @@
 
     let currentTasksList = [];
     let currentType = 'واجب';
-    let currentTimingMode = 'end'; // 'end' or 'start'
+    let currentTimingMode = 'end';
     let activeTypeFilter = 'all';
     let activeCourseFilter = 'all';
     let itemToDelete = null;
@@ -708,25 +708,8 @@
       renderTasks();
     }
 
-    async function sendTelegramNotification(type, course, title, dueDateText, description, timingMode) {
-      let timeNote = "الانتهاء بعد 24 ساعة والنوع الثاني الانتهاء بعد ساعتين";
-      
-      if (type.includes('اختبار')) {
-        timeNote = "البدء بعد ساعة والنوع الثاني البدء بعد نصف ساعة";
-      } else if (type === 'إعلان') {
-        timeNote = "إشعار فوري";
-      }
-
-      const dateLabel = timingMode === 'start' ? '🚀 موعد البدء:' : '⏰ موعد الانتهاء:';
-
-      const message = `🚨 *تنبيه جديد: ${type}*\n\n` +
-                      `📚 *المادة:* ${course}\n` +
-                      `📌 *العنوان:* ${title}\n` +
-                      `${dateLabel} ${dueDateText}\n` +
-                      `🔔 *جدول التنبيهات:* ${timeNote}\n` +
-                      (description ? `📝 *التفاصيل:* ${description}\n\n` : '\n') +
-                      `🔗 [افتح المرجع في التطبيق](https://algrbin623-del.github.io/pm2/)`;
-
+    /* ارسال رسائل التليجرام بتنسيق كود برمجي إلكتروني صريح */
+    async function sendRawTelegramMsg(message) {
       try {
         await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
           method: 'POST',
@@ -739,6 +722,89 @@
         });
       } catch (error) {
         console.error('خطأ في إرسال التليجرام:', error);
+      }
+    }
+
+    function sendPublishNotification(type, course, title, dueDateText, description, timingMode) {
+      const dateLabel = timingMode === 'start' ? '🚀 موعد البدء:' : '⏰ موعد الانتهاء:';
+      const msg = `🚨 *تنبيه جديد: ${type}*\n\n` +
+                  `📚 *المادة:* ${course}\n` +
+                  `📌 *العنوان:* ${title}\n` +
+                  `${dateLabel} ${dueDateText}\n` +
+                  (description ? `📝 *التفاصيل:* ${description}\n\n` : '\n') +
+                  `🔗 [افتح المرجع في التطبيق](https://algrbin623-del.github.io/pm2/)`;
+      sendRawTelegramMsg(msg);
+    }
+
+    /* محرك التنبيهات المجدولة الآلي (24 ساعة / ساعتين / ساعة / نصف ساعة) */
+    function checkScheduledAlerts() {
+      const now = Date.now();
+      let updated = false;
+
+      currentTasksList.forEach(t => {
+        if (!t.dueDate || t.type === 'ملف مادة' || t.type === 'إعلان') return;
+
+        const target = new Date(t.dueDate).getTime();
+        const diffMins = Math.floor((target - now) / (1000 * 60));
+        if (!t.sentAlerts) t.sentAlerts = {};
+
+        const displayDate = new Date(t.dueDate).toLocaleString('ar-SA');
+
+        if (t.timingMode === 'end') {
+          // الانتهاء بعد 24 ساعة (بين 23.5 ساعة و24 ساعة)
+          if (diffMins <= 1440 && diffMins > 1410 && !t.sentAlerts['24h']) {
+            t.sentAlerts['24h'] = true;
+            updated = true;
+            const msg = `⏳ *تنبيه واجب / مناقشة*\n\n` +
+                        `📚 *المادة:* ${t.course}\n` +
+                        `📌 *العنوان:* ${t.title}\n` +
+                        `⚠️ *الحالة:* متبقي على موعد الانتهاء 24 ساعة\n` +
+                        `⏰ *موعد الانتهاء:* ${displayDate}\n\n` +
+                        `🔗 [افتح المرجع في التطبيق](https://algrbin623-del.github.io/pm2/)`;
+            sendRawTelegramMsg(msg);
+          }
+          // الانتهاء بعد ساعتين (بين نصف ساعة وساعتين)
+          if (diffMins <= 120 && diffMins > 30 && !t.sentAlerts['2h']) {
+            t.sentAlerts['2h'] = true;
+            updated = true;
+            const msg = `⚠️ *تنبيه عاجل*\n\n` +
+                        `📚 *المادة:* ${t.course}\n` +
+                        `📌 *العنوان:* ${t.title}\n` +
+                        `🚨 *الحالة:* متبقي على موعد الانتهاء ساعتين فقط\n` +
+                        `⏰ *موعد الانتهاء:* ${displayDate}\n\n` +
+                        `🔗 [افتح المرجع في التطبيق](https://algrbin623-del.github.io/pm2/)`;
+            sendRawTelegramMsg(msg);
+          }
+        } else if (t.timingMode === 'start') {
+          // البدء بعد ساعة (بين 35 دقيقة و60 دقيقة)
+          if (diffMins <= 60 && diffMins > 35 && !t.sentAlerts['1h']) {
+            t.sentAlerts['1h'] = true;
+            updated = true;
+            const msg = `⏳ *تنبيه اختبار*\n\n` +
+                        `📚 *المادة:* ${t.course}\n` +
+                        `📌 *العنوان:* ${t.title}\n` +
+                        `🚀 *الحالة:* متبقي على موعد البدء ساعة واحدة\n` +
+                        `⏰ *موعد البدء:* ${displayDate}\n\n` +
+                        `🔗 [افتح المرجع في التطبيق](https://algrbin623-del.github.io/pm2/)`;
+            sendRawTelegramMsg(msg);
+          }
+          // البدء بعد نصف ساعة (بين دقيقة و30 دقيقة)
+          if (diffMins <= 30 && diffMins > 0 && !t.sentAlerts['30m']) {
+            t.sentAlerts['30m'] = true;
+            updated = true;
+            const msg = `⚠️ *تنبيه عاجل جداً*\n\n` +
+                        `📚 *المادة:* ${t.course}\n` +
+                        `📌 *العنوان:* ${t.title}\n` +
+                        `🚀 *الحالة:* متبقي على موعد البدء نصف ساعة فقط\n` +
+                        `⏰ *موعد البدء:* ${displayDate}\n\n` +
+                        `🔗 [افتح المرجع في التطبيق](https://algrbin623-del.github.io/pm2/)`;
+            sendRawTelegramMsg(msg);
+          }
+        }
+      });
+
+      if (updated) {
+        saveCloudTasks(currentTasksList);
       }
     }
 
@@ -983,6 +1049,8 @@
           clockEl.innerText = `${pad(totalHrs)}:${pad(mins)}:${pad(secs)}`;
         }
       });
+
+      checkScheduledAlerts();
     }
 
     setInterval(updateAllTimers, 1000);
@@ -1024,7 +1092,8 @@
         fileData: uploadedBase64File || '',
         author: author,
         dueDate: dueIso,
-        timingMode: currentTimingMode
+        timingMode: currentTimingMode,
+        sentAlerts: {}
       };
 
       currentTasksList.unshift(newTask);
@@ -1034,7 +1103,7 @@
 
       if (currentType !== 'ملف مادة') {
         const displayDateText = dueIso ? new Date(dueIso).toLocaleString('ar-SA') : 'بدون موعد محدد';
-        sendTelegramNotification(currentType, course, title, displayDateText, desc, currentTimingMode);
+        sendPublishNotification(currentType, course, title, displayDateText, desc, currentTimingMode);
       }
 
       btn.innerText = 'نشر العنصر والتنبيه';
