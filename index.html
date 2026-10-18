@@ -219,6 +219,7 @@
 
     .card-bottom-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 6px; border-top: 1px dashed rgba(0,0,0,0.06); }
     .actions-left-group { display: flex; align-items: center; gap: 10px; }
+    .btn-edit-task { background: none; border: none; color: #1d4ed8; font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 4px; cursor: pointer; padding: 3px 6px; border-radius: 6px; }
     .btn-delete-task { background: none; border: none; color: #b91c1c; font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 4px; cursor: pointer; padding: 3px 6px; border-radius: 6px; }
 
     /* Courses Tab Styles */
@@ -484,6 +485,56 @@
     </div>
   </div>
 
+  <!-- Modal: Edit Item -->
+  <div class="modal-overlay" id="editModal">
+    <div class="modal-sheet">
+      <div class="sheet-header">
+        <button class="btn-close-circle" onclick="closeEditModal()">✕</button>
+        <div class="sheet-title">تعديل التنبيه / العنصر</div>
+      </div>
+
+      <div class="form-group">
+        <label>المادة الأكاديمية</label>
+        <select class="custom-select" id="editCourseSelect">
+          <option value="محاسبة التكاليف">محاسبة التكاليف</option>
+          <option value="إدارة الامداد والتموين">إدارة الامداد والتموين</option>
+          <option value="إدارة الجودة في المشاريع">إدارة الجودة في المشاريع</option>
+          <option value="إدارة المخاطر في المشاريع">إدارة المخاطر في المشاريع</option>
+          <option value="الإدارة الالكترونية للمشاريع">الإدارة الالكترونية للمشاريع</option>
+          <option value="الجدوى الاقتصادية للمشاريع">الجدوى الاقتصادية للمشاريع</option>
+          <option value="تمويل المشاريع">تمويل المشاريع</option>
+          <option value="مشروع تطبيقي">مشروع تطبيقي</option>
+          <option value="أخرى">أخرى</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>العنوان / اسم الملف</label>
+        <input type="text" class="custom-input" id="editTitleInput">
+      </div>
+
+      <div class="form-group">
+        <label>اسم الناشر</label>
+        <input type="text" class="custom-input" id="editAuthorInput">
+      </div>
+
+      <div class="form-group">
+        <label>تفاصيل إضافية (اختياري)</label>
+        <textarea class="custom-textarea" id="editDescInput"></textarea>
+      </div>
+
+      <div class="form-group" id="editDateGroupWrapper">
+        <label>تاريخ الموعد / الوقت</label>
+        <div class="datetime-row">
+          <input type="time" class="custom-input" id="editTimeInput">
+          <input type="date" class="custom-input" id="editDateInput">
+        </div>
+      </div>
+
+      <button type="button" class="btn-submit-post" id="btnSaveEdit" onclick="saveTaskEdit()">حفظ التعديلات ✓</button>
+    </div>
+  </div>
+
   <!-- Modal: Add Item -->
   <div class="modal-overlay" id="alertModal">
     <div class="modal-sheet">
@@ -600,9 +651,9 @@
     let activeTypeFilter = 'all';
     let activeCourseFilter = 'all';
     let itemToDelete = null;
+    let editingTaskId = null;
     let uploadedBase64File = "";
 
-    /* تحويل التاريخ إلى صيغة ميلادية واضحة ومقروءة YYYY/MM/DD */
     function formatGregorianDate(isoStr) {
       if (!isoStr) return 'بدون موعد محدد';
       const d = new Date(isoStr);
@@ -614,13 +665,12 @@
       const minutes = String(d.getMinutes()).padStart(2, '0');
       const ampm = hours >= 12 ? 'م' : 'ص';
       hours = hours % 12;
-      hours = hours ? hours : 12; // الساعة 0 تصبح 12
+      hours = hours ? hours : 12;
       const strTime = `${String(hours).padStart(2, '0')}:${minutes} ${ampm}`;
 
       return `${year}/${month}/${day} - ${strTime}`;
     }
 
-    /* حجب شريط تثبيت التطبيق نهائياً للمستخدم الحاضر عند الضغط على الحذف */
     function checkBannerStatus() {
       const dismissed = localStorage.getItem('pwa_banner_dismissed');
       if (dismissed === 'true') {
@@ -741,7 +791,6 @@
       renderTasks();
     }
 
-    /* ارسال رسائل التليجرام بتنسيق صريح وبصيغة ميلادية */
     async function sendRawTelegramMsg(message) {
       try {
         await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
@@ -769,7 +818,6 @@
       sendRawTelegramMsg(msg);
     }
 
-    /* محرك التنبيهات المجدولة الآلي بصيغ التارخ الميلادي */
     function checkScheduledAlerts() {
       const now = Date.now();
       let updated = false;
@@ -784,7 +832,6 @@
         const displayDate = formatGregorianDate(t.dueDate);
 
         if (t.timingMode === 'end') {
-          // الانتهاء بعد 24 ساعة
           if (diffMins <= 1440 && diffMins > 1410 && !t.sentAlerts['24h']) {
             t.sentAlerts['24h'] = true;
             updated = true;
@@ -796,7 +843,6 @@
                         `🔗 [افتح المرجع في التطبيق](https://algrbin623-del.github.io/pm2/)`;
             sendRawTelegramMsg(msg);
           }
-          // الانتهاء بعد ساعتين
           if (diffMins <= 120 && diffMins > 30 && !t.sentAlerts['2h']) {
             t.sentAlerts['2h'] = true;
             updated = true;
@@ -809,7 +855,6 @@
             sendRawTelegramMsg(msg);
           }
         } else if (t.timingMode === 'start') {
-          // البدء بعد ساعة
           if (diffMins <= 60 && diffMins > 35 && !t.sentAlerts['1h']) {
             t.sentAlerts['1h'] = true;
             updated = true;
@@ -821,7 +866,6 @@
                         `🔗 [افتح المرجع في التطبيق](https://algrbin623-del.github.io/pm2/)`;
             sendRawTelegramMsg(msg);
           }
-          // البدء بعد نصف ساعة
           if (diffMins <= 30 && diffMins > 0 && !t.sentAlerts['30m']) {
             t.sentAlerts['30m'] = true;
             updated = true;
@@ -964,6 +1008,9 @@
 
           <div class="card-bottom-actions">
             <div class="actions-left-group">
+              <button class="btn-edit-task" onclick="openEditModal('${t.id}')">
+                <span>تعديل</span> ✏️
+              </button>
               <button class="btn-delete-task" onclick="confirmDelete('${t.id}', '${t.title}')">
                 <span>حذف</span> 🗑️
               </button>
@@ -1000,10 +1047,14 @@
             </div>
           </div>
           <div class="card-bottom-actions">
-            <span></span>
-            <button class="btn-delete-task" onclick="confirmDelete('${t.id}', '${t.title}')">
-              <span>حذف</span> 🗑️
-            </button>
+            <div class="actions-left-group">
+              <button class="btn-edit-task" onclick="openEditModal('${t.id}')">
+                <span>تعديل</span> ✏️
+              </button>
+              <button class="btn-delete-task" onclick="confirmDelete('${t.id}', '${t.title}')">
+                <span>حذف</span> 🗑️
+              </button>
+            </div>
           </div>
         `;
         archiveDynamic.appendChild(card);
@@ -1033,7 +1084,8 @@
                 <div class="file-item-title">📄 ${f.title}</div>
                 <div class="file-item-actions">
                   <button class="btn-file-act" onclick="openAttachedFile('${f.id}')">فتح / تحميل</button>
-                  <button class="btn-file-act" style="color:#b91c1c;" onclick="confirmDelete('${f.id}', '${f.title}')">حذف</button>
+                  <button class="btn-file-act" style="color:#1d4ed8;" onclick="openEditModal('${f.id}')">تعديل ✏️</button>
+                  <button class="btn-file-act" style="color:#b91c1c;" onclick="confirmDelete('${f.id}', '${f.title}')">حذف 🗑️</button>
                 </div>
               </div>
             `).join('')}
@@ -1088,6 +1140,74 @@
 
     setInterval(updateAllTimers, 1000);
     setInterval(fetchCloudTasks, 15000);
+
+    /* وظائف نافذة التعديل الذكية */
+    function openEditModal(taskId) {
+      const task = currentTasksList.find(t => t.id === taskId);
+      if (!task) return;
+
+      editingTaskId = taskId;
+      document.getElementById('editCourseSelect').value = task.course || '';
+      document.getElementById('editTitleInput').value = task.title || '';
+      document.getElementById('editAuthorInput').value = task.author || 'عبدالله';
+      document.getElementById('editDescInput').value = task.desc || '';
+
+      const dateWrap = document.getElementById('editDateGroupWrapper');
+      if (task.type === 'ملف مادة') {
+        dateWrap.style.display = 'none';
+      } else {
+        dateWrap.style.display = 'block';
+        if (task.dueDate) {
+          const d = new Date(task.dueDate);
+          const yyyy = d.getFullYear();
+          const mm = String(d.getMonth() + 1).padStart(2, '0');
+          const dd = String(d.getDate()).padStart(2, '0');
+          const hh = String(d.getHours()).padStart(2, '0');
+          const min = String(d.getMinutes()).padStart(2, '0');
+
+          document.getElementById('editDateInput').value = `${yyyy}-${mm}-${dd}`;
+          document.getElementById('editTimeInput').value = `${hh}:${min}`;
+        }
+      }
+
+      document.getElementById('editModal').style.display = 'flex';
+    }
+
+    function closeEditModal() {
+      editingTaskId = null;
+      document.getElementById('editModal').style.display = 'none';
+    }
+
+    async function saveTaskEdit() {
+      if (!editingTaskId) return;
+
+      const task = currentTasksList.find(t => t.id === editingTaskId);
+      if (!task) return;
+
+      const btn = document.getElementById('btnSaveEdit');
+      btn.innerText = 'جاري الحفظ...';
+      btn.disabled = true;
+
+      task.course = document.getElementById('editCourseSelect').value;
+      task.title = document.getElementById('editTitleInput').value.trim();
+      task.author = document.getElementById('editAuthorInput').value.trim() || 'عبدالله';
+      task.desc = document.getElementById('editDescInput').value.trim();
+
+      const dateVal = document.getElementById('editDateInput').value;
+      const timeVal = document.getElementById('editTimeInput').value || '23:59';
+
+      if (task.type !== 'ملف مادة' && dateVal) {
+        task.dueDate = new Date(`${dateVal}T${timeVal}:00`).toISOString();
+      }
+
+      renderTasks();
+      renderCoursesTab();
+      await saveCloudTasks(currentTasksList);
+
+      btn.innerText = 'حفظ التعديلات ✓';
+      btn.disabled = false;
+      closeEditModal();
+    }
 
     async function handlePublish() {
       const course = document.getElementById('courseSelect').value.trim();
