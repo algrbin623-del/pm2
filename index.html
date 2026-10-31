@@ -654,6 +654,7 @@
     let itemToDelete = null;
     let editingTaskId = null;
     let uploadedBase64File = "";
+    let isSaving = false; // لمنع تعارض الجلب التلقائي أثناء عملية الحفظ
 
     /* تحويل التاريخ آمن لضمان عدم انهيار العرض */
     function formatGregorianDate(isoStr) {
@@ -895,6 +896,8 @@
     }
 
     async function fetchCloudTasks() {
+      if (isSaving) return; // منع جلب البيانات إذا كانت هناك عملية حفظ قائمة
+
       try {
         const res = await fetch(DB_URL);
         const data = await res.json();
@@ -904,7 +907,6 @@
         else if (data && typeof data === 'object') loaded = Object.values(data);
         else loaded = [];
 
-        // تصفية أي عناصر فارغة إن وجدت
         loaded = loaded.filter(item => item && item.id);
 
         currentTasksList = loaded;
@@ -916,6 +918,7 @@
     }
 
     async function saveCloudTasks(tasks) {
+      isSaving = true;
       try {
         await fetch(DB_URL, {
           method: 'PUT',
@@ -924,6 +927,8 @@
         });
       } catch (err) {
         console.error("خطأ حفظ البيانات:", err);
+      } finally {
+        setTimeout(() => { isSaving = false; }, 2000);
       }
     }
 
@@ -1277,11 +1282,15 @@
         sentAlerts: {}
       };
 
+      // 1. إضافة العنصر مسبقاً وتحديث الشاشة فوراً
       currentTasksList.unshift(newTask);
       renderTasks();
       renderCoursesTab();
+
+      // 2. رفع الحفظ على السيرفر وانتظار اكتماله بدون تعارض
       await saveCloudTasks(currentTasksList);
 
+      // 3. إرسال تنبيه التليجرام بعد نجاح الحفظ
       if (currentType !== 'ملف مادة') {
         const displayDateText = formatGregorianDate(dueIso);
         sendPublishNotification(currentType, course, title, displayDateText, desc, currentTimingMode);
