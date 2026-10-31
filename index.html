@@ -1,4 +1,4 @@
-<!DOCTYPE html>  
+<!DOCTYPE html> 
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
@@ -655,10 +655,11 @@
     let editingTaskId = null;
     let uploadedBase64File = "";
 
-    /* تحويل التاريخ إلى صيغة ميلادية متكاملة مع اسم اليوم العربي (مثال: الأحد، 2026/10/18 - 06:00 م) */
+    /* تحويل التاريخ آمن لضمان عدم انهيار العرض */
     function formatGregorianDate(isoStr) {
       if (!isoStr) return 'بدون موعد محدد';
       const d = new Date(isoStr);
+      if (isNaN(d.getTime())) return 'بدون موعد محدد';
       
       const daysArabic = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
       const dayName = daysArabic[d.getDay()];
@@ -746,7 +747,7 @@
     }
 
     function openAttachedFile(taskId) {
-      const task = currentTasksList.find(t => t.id === taskId);
+      const task = currentTasksList.find(t => t && t.id === taskId);
       if (!task) return;
       const file = task.fileData || task.fileUrl;
       if (!file) return;
@@ -829,9 +830,11 @@
       let updated = false;
 
       currentTasksList.forEach(t => {
-        if (!t.dueDate || t.type === 'ملف مادة' || t.type === 'إعلان') return;
+        if (!t || !t.dueDate || t.type === 'ملف مادة' || t.type === 'إعلان') return;
 
         const target = new Date(t.dueDate).getTime();
+        if (isNaN(target)) return;
+
         const diffMins = Math.floor((target - now) / (1000 * 60));
         if (!t.sentAlerts) t.sentAlerts = {};
 
@@ -901,11 +904,12 @@
         else if (data && typeof data === 'object') loaded = Object.values(data);
         else loaded = [];
 
-        if (JSON.stringify(currentTasksList) !== JSON.stringify(loaded)) {
-          currentTasksList = loaded;
-          renderTasks();
-          renderCoursesTab();
-        }
+        // تصفية أي عناصر فارغة إن وجدت
+        loaded = loaded.filter(item => item && item.id);
+
+        currentTasksList = loaded;
+        renderTasks();
+        renderCoursesTab();
       } catch (err) {
         console.error("خطأ جلب البيانات:", err);
       }
@@ -929,6 +933,8 @@
       const counter = document.getElementById('activeCounterText');
       const archiveTitle = document.getElementById('archiveTitleText');
       
+      if (!activeContainer || !archiveDynamic) return;
+
       activeContainer.innerHTML = '';
       archiveDynamic.innerHTML = '';
 
@@ -937,7 +943,7 @@
       let expiredTasks = [];
       const completedSet = new Set(getCompletedTaskIds());
 
-      let alertTasks = currentTasksList.filter(t => t.type !== 'ملف مادة');
+      let alertTasks = currentTasksList.filter(t => t && t.type !== 'ملف مادة');
 
       if (activeTypeFilter !== 'all') {
         alertTasks = alertTasks.filter(t => t.type === activeTypeFilter);
@@ -950,16 +956,25 @@
         if (!t.dueDate) {
           activeTasks.push(t);
         } else {
-          const diff = new Date(t.dueDate).getTime() - now;
-          if (diff <= 0) expiredTasks.push(t);
-          else activeTasks.push(t);
+          const targetTime = new Date(t.dueDate).getTime();
+          if (isNaN(targetTime)) {
+            activeTasks.push(t);
+          } else {
+            const diff = targetTime - now;
+            if (diff <= 0) expiredTasks.push(t);
+            else activeTasks.push(t);
+          }
         }
       });
 
       activeTasks.sort((a, b) => {
         if (!a.dueDate) return 1;
         if (!b.dueDate) return -1;
-        return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+        const tA = new Date(a.dueDate).getTime();
+        const tB = new Date(b.dueDate).getTime();
+        if (isNaN(tA)) return 1;
+        if (isNaN(tB)) return -1;
+        return tA - tB;
       });
 
       counter.innerText = `${activeTasks.length} تنبيهات نشطة`;
@@ -974,7 +989,7 @@
         
         let badgeColorClass = 'badge-blue';
         if (t.type === 'مناقشة') badgeColorClass = 'badge-teal';
-        else if (t.type.includes('اختبار')) badgeColorClass = 'badge-red';
+        else if (t.type && t.type.includes('اختبار')) badgeColorClass = 'badge-red';
         else if (t.type === 'إعلان') badgeColorClass = 'badge-amber';
 
         const isDone = completedSet.has(t.id);
@@ -988,8 +1003,8 @@
         card.innerHTML = `
           <div class="card-top-bar">
             <div class="tags-row">
-              <span class="badge-kind ${badgeColorClass}">${t.type}</span>
-              <span class="subject-title">${t.course}</span>
+              <span class="badge-kind ${badgeColorClass}">${t.type || 'تنبيه'}</span>
+              <span class="subject-title">${t.course || 'عام'}</span>
             </div>
             <button class="btn-toggle-done" onclick="toggleTaskDone('${t.id}', event)">
               <span>${isDone ? '✓ تم الحل' : '○ حليته؟'}</span>
@@ -998,7 +1013,7 @@
 
           <div class="card-flex">
             <div class="card-right-info">
-              <div class="task-title">${t.title}</div>
+              <div class="task-title">${t.title || ''}</div>
               ${t.desc ? `<div class="task-desc">${t.desc}</div>` : ''}
               ${t.dueDate ? `<div class="date-display-badge">📅 ${formattedDateBadge}</div>` : ''}
               ${fileTarget ? `<button type="button" onclick="openAttachedFile('${t.id}')" class="attachment-btn">📄 فتح / تحميل المرفق</button>` : ''}
@@ -1032,7 +1047,7 @@
       expiredTasks.forEach((t) => {
         let badgeColorClass = 'badge-blue';
         if (t.type === 'مناقشة') badgeColorClass = 'badge-teal';
-        else if (t.type.includes('اختبار')) badgeColorClass = 'badge-red';
+        else if (t.type && t.type.includes('اختبار')) badgeColorClass = 'badge-red';
         else if (t.type === 'إعلان') badgeColorClass = 'badge-amber';
 
         const fileTarget = t.fileData || t.fileUrl;
@@ -1044,10 +1059,10 @@
           <div class="card-flex">
             <div class="card-right-info">
               <div class="tags-row">
-                <span class="badge-kind ${badgeColorClass}">${t.type}</span>
-                <span class="subject-title">${t.course}</span>
+                <span class="badge-kind ${badgeColorClass}">${t.type || 'تنبيه'}</span>
+                <span class="subject-title">${t.course || 'عام'}</span>
               </div>
-              <div class="task-title">${t.title}</div>
+              <div class="task-title">${t.title || ''}</div>
               ${t.dueDate ? `<div class="date-display-badge">📅 ${formattedDateBadge}</div>` : ''}
               ${fileTarget ? `<button type="button" onclick="openAttachedFile('${t.id}')" class="attachment-btn">📄 فتح المرفق</button>` : ''}
               <div class="author-line">بواسطة ${t.author || 'عبدالله'}</div>
@@ -1075,10 +1090,11 @@
 
     function renderCoursesTab() {
       const container = document.getElementById('coursesListContainer');
+      if (!container) return;
       container.innerHTML = '';
 
       ALL_COURSES.forEach(courseName => {
-        const courseFiles = currentTasksList.filter(t => t.course === courseName && (t.type === 'ملف مادة' || t.fileData || t.fileUrl));
+        const courseFiles = currentTasksList.filter(t => t && t.course === courseName && (t.type === 'ملف مادة' || t.fileData || t.fileUrl));
 
         const courseCard = document.createElement('div');
         courseCard.className = 'course-card';
@@ -1117,10 +1133,11 @@
       const completedSet = new Set(getCompletedTaskIds());
 
       currentTasksList.forEach(t => {
-        if (!t.dueDate || t.type === 'ملف مادة') return;
+        if (!t || !t.dueDate || t.type === 'ملف مادة') return;
         const target = new Date(t.dueDate).getTime();
-        const diff = target - now;
+        if (isNaN(target)) return;
 
+        const diff = target - now;
         if (diff <= 0) return;
 
         const days = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -1152,7 +1169,7 @@
     setInterval(fetchCloudTasks, 15000);
 
     function openEditModal(taskId) {
-      const task = currentTasksList.find(t => t.id === taskId);
+      const task = currentTasksList.find(t => t && t.id === taskId);
       if (!task) return;
 
       editingTaskId = taskId;
@@ -1168,14 +1185,16 @@
         dateWrap.style.display = 'block';
         if (task.dueDate) {
           const d = new Date(task.dueDate);
-          const yyyy = d.getFullYear();
-          const mm = String(d.getMonth() + 1).padStart(2, '0');
-          const dd = String(d.getDate()).padStart(2, '0');
-          const hh = String(d.getHours()).padStart(2, '0');
-          const min = String(d.getMinutes()).padStart(2, '0');
+          if (!isNaN(d.getTime())) {
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            const hh = String(d.getHours()).padStart(2, '0');
+            const min = String(d.getMinutes()).padStart(2, '0');
 
-          document.getElementById('editDateInput').value = `${yyyy}-${mm}-${dd}`;
-          document.getElementById('editTimeInput').value = `${hh}:${min}`;
+            document.getElementById('editDateInput').value = `${yyyy}-${mm}-${dd}`;
+            document.getElementById('editTimeInput').value = `${hh}:${min}`;
+          }
         }
       }
 
@@ -1190,7 +1209,7 @@
     async function saveTaskEdit() {
       if (!editingTaskId) return;
 
-      const task = currentTasksList.find(t => t.id === editingTaskId);
+      const task = currentTasksList.find(t => t && t.id === editingTaskId);
       if (!task) return;
 
       const btn = document.getElementById('btnSaveEdit');
@@ -1296,7 +1315,7 @@
       const btn = document.getElementById('btnConfirmDelete');
       btn.innerText = 'جاري الحذف...';
 
-      currentTasksList = currentTasksList.filter(t => t.id !== itemToDelete);
+      currentTasksList = currentTasksList.filter(t => t && t.id !== itemToDelete);
       renderTasks();
       renderCoursesTab();
       await saveCloudTasks(currentTasksList);
