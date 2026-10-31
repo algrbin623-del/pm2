@@ -74,7 +74,6 @@
     .view-pill button { border: none; background: transparent; padding: 4px 8px; border-radius: 16px; cursor: pointer; color: #666; display: flex; align-items: center; justify-content: center; }
     .view-pill button.active { background: var(--primary-green); color: white; }
 
-    /* Main Tab Selector */
     .main-tabs-nav {
       display: flex;
       background: #eae5d9;
@@ -100,7 +99,6 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     }
 
-    /* Filter Bar */
     .filter-bar {
       display: flex;
       gap: 8px;
@@ -223,7 +221,6 @@
     .btn-edit-task { background: none; border: none; color: #1d4ed8; font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 4px; cursor: pointer; padding: 3px 6px; border-radius: 6px; }
     .btn-delete-task { background: none; border: none; color: #b91c1c; font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 4px; cursor: pointer; padding: 3px 6px; border-radius: 6px; }
 
-    /* Courses Tab Styles */
     .courses-container { display: none; flex-direction: column; gap: 12px; }
     .course-card {
       background: white;
@@ -300,12 +297,10 @@
     .type-btn { background: var(--input-bg); border: none; padding: 9px 0; border-radius: 10px; font-size: 12px; font-weight: 700; color: #555; cursor: pointer; }
     .type-btn.active { background: var(--primary-green); color: white; }
 
-    /* Mode selector: End / Start */
     .mode-toggle-grid { display: flex; gap: 8px; margin-bottom: 8px; }
     .mode-btn { flex: 1; background: var(--input-bg); border: 1px solid var(--border-soft); padding: 8px 0; border-radius: 10px; font-size: 12px; font-weight: 700; color: #555; cursor: pointer; }
     .mode-btn.active { background: #1848b8; color: white; border-color: #1848b8; }
 
-    /* Announcement time toggle option */
     .announcement-toggle-box {
       display: flex; align-items: center; justify-content: space-between;
       background: #eae5d9; padding: 10px 14px; border-radius: 12px; margin-bottom: 10px;
@@ -604,7 +599,6 @@
         <input type="url" class="custom-input" id="taskFileInput" placeholder="https://... رابط الملف الخارجي">
       </div>
 
-      <!-- Annoucement Checkbox Box -->
       <div class="announcement-toggle-box" id="announcementToggleWrapper" style="display: none;">
         <label for="enableAnnouncementDate">تحديد تاريخ ووقت للإعلان؟</label>
         <input type="checkbox" id="enableAnnouncementDate" onchange="toggleAnnouncementDateInput(this.checked)">
@@ -613,7 +607,6 @@
       <div class="form-group" id="dateGroupWrapper">
         <label id="dateGroupTitle">موعد الانتهاء أو تاريخ الاختبار</label>
         
-        <!-- Mode selector: End / Start -->
         <div class="mode-toggle-grid" id="timingModeGrid">
           <button type="button" class="mode-btn active" id="btnModeEnd" onclick="selectTimeMode('end')">موعد انتهاء ⏳</button>
           <button type="button" class="mode-btn" id="btnModeStart" onclick="selectTimeMode('start')">موعد بدء 🚀</button>
@@ -654,9 +647,8 @@
     let itemToDelete = null;
     let editingTaskId = null;
     let uploadedBase64File = "";
-    let isSaving = false; // لمنع تعارض الجلب التلقائي أثناء عملية الحفظ
+    let isLockedForSave = false;
 
-    /* تحويل التاريخ آمن لضمان عدم انهيار العرض */
     function formatGregorianDate(isoStr) {
       if (!isoStr) return 'بدون موعد محدد';
       const d = new Date(isoStr);
@@ -896,10 +888,10 @@
     }
 
     async function fetchCloudTasks() {
-      if (isSaving) return; // منع جلب البيانات إذا كانت هناك عملية حفظ قائمة
+      if (isLockedForSave) return;
 
       try {
-        const res = await fetch(DB_URL);
+        const res = await fetch(DB_URL + '?nocache=' + Date.now());
         const data = await res.json();
         let loaded = [];
 
@@ -918,7 +910,7 @@
     }
 
     async function saveCloudTasks(tasks) {
-      isSaving = true;
+      isLockedForSave = true;
       try {
         await fetch(DB_URL, {
           method: 'PUT',
@@ -928,7 +920,7 @@
       } catch (err) {
         console.error("خطأ حفظ البيانات:", err);
       } finally {
-        setTimeout(() => { isSaving = false; }, 2000);
+        setTimeout(() => { isLockedForSave = false; }, 3000);
       }
     }
 
@@ -1282,15 +1274,12 @@
         sentAlerts: {}
       };
 
-      // 1. إضافة العنصر مسبقاً وتحديث الشاشة فوراً
       currentTasksList.unshift(newTask);
       renderTasks();
       renderCoursesTab();
 
-      // 2. رفع الحفظ على السيرفر وانتظار اكتماله بدون تعارض
       await saveCloudTasks(currentTasksList);
 
-      // 3. إرسال تنبيه التليجرام بعد نجاح الحفظ
       if (currentType !== 'ملف مادة') {
         const displayDateText = formatGregorianDate(dueIso);
         sendPublishNotification(currentType, course, title, displayDateText, desc, currentTimingMode);
