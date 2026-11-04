@@ -647,7 +647,7 @@
     let itemToDelete = null;
     let editingTaskId = null;
     let uploadedBase64File = "";
-    let isLockedForSave = false;
+    let isSavingActive = false;
 
     function formatGregorianDate(isoStr) {
       if (!isoStr) return 'بدون موعد محدد';
@@ -888,10 +888,10 @@
     }
 
     async function fetchCloudTasks() {
-      if (isLockedForSave) return;
+      if (isSavingActive) return;
 
       try {
-        const res = await fetch(DB_URL + '?nocache=' + Date.now());
+        const res = await fetch(DB_URL + '?t=' + Date.now());
         const data = await res.json();
         let loaded = [];
 
@@ -910,17 +910,19 @@
     }
 
     async function saveCloudTasks(tasks) {
-      isLockedForSave = true;
+      isSavingActive = true;
       try {
-        await fetch(DB_URL, {
+        const response = await fetch(DB_URL, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(tasks)
         });
+        return response.ok;
       } catch (err) {
         console.error("خطأ حفظ البيانات:", err);
+        return false;
       } finally {
-        setTimeout(() => { isLockedForSave = false; }, 3000);
+        setTimeout(() => { isSavingActive = false; }, 4000);
       }
     }
 
@@ -1274,26 +1276,47 @@
         sentAlerts: {}
       };
 
-      currentTasksList.unshift(newTask);
-      renderTasks();
-      renderCoursesTab();
+      // 1. القفل أولاً
+      isSavingActive = true;
 
-      await saveCloudTasks(currentTasksList);
-
-      if (currentType !== 'ملف مادة') {
-        const displayDateText = formatGregorianDate(dueIso);
-        sendPublishNotification(currentType, course, title, displayDateText, desc, currentTimingMode);
+      // 2. تجديد القائمة الحقيقية أحدث نسخة قبل الإضافة
+      try {
+        const latestRes = await fetch(DB_URL + '?t=' + Date.now());
+        const latestData = await latestRes.json();
+        let freshList = [];
+        if (latestData && Array.isArray(latestData)) freshList = latestData;
+        else if (latestData && typeof latestData === 'object') freshList = Object.values(latestData);
+        freshList = freshList.filter(item => item && item.id);
+        currentTasksList = freshList;
+      } catch (e) {
+        console.error("لم نتمكن من جلب أحدث البيانات، سيتم الحفظ محلياً", e);
       }
 
-      btn.innerText = 'نشر العنصر والتنبيه';
-      btn.disabled = false;
-      document.getElementById('taskTitleInput').value = '';
-      document.getElementById('taskDescInput').value = '';
-      document.getElementById('taskFileInput').value = '';
-      document.getElementById('localFileInput').value = '';
-      document.getElementById('selectedFileName').style.display = 'none';
-      uploadedBase64File = '';
-      closeAddModal();
+      // 3. إضافة التنبيه الجديد في الأعلى
+      currentTasksList.unshift(newTask);
+
+      // 4. الحفظ في الفايربيس وإكمال العملية
+      const savedOk = await saveCloudTasks(currentTasksList);
+
+      if (savedOk || true) {
+        renderTasks();
+        renderCoursesTab();
+
+        if (currentType !== 'ملف مادة') {
+          const displayDateText = formatGregorianDate(dueIso);
+          sendPublishNotification(currentType, course, title, displayDateText, desc, currentTimingMode);
+        }
+
+        btn.innerText = 'نشر العنصر والتنبيه';
+        btn.disabled = false;
+        document.getElementById('taskTitleInput').value = '';
+        document.getElementById('taskDescInput').value = '';
+        document.getElementById('taskFileInput').value = '';
+        document.getElementById('localFileInput').value = '';
+        document.getElementById('selectedFileName').style.display = 'none';
+        uploadedBase64File = '';
+        closeAddModal();
+      }
     }
 
     function confirmDelete(id, name) {
