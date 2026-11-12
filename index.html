@@ -160,6 +160,7 @@
     .task-card.is-expired { opacity: .82; box-shadow: var(--shadow-sm); }
     .task-card.is-expired::before { background: #c8c2b5; }
     .task-card.just-done { animation: doneOut .7s var(--ease) .35s forwards; }
+    body.loaded .task-card:not(.just-done) { animation: none; }
     @keyframes cardIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
     @keyframes doneOut { to { opacity: 0; transform: translateY(12px) scale(.97); } }
 
@@ -281,8 +282,8 @@
     .fab.mini .fab-text { max-width: 0; opacity: 0; }
 
     /* ========== Toast ========== */
-    .toast { position: fixed; top: calc(14px + env(safe-area-inset-top)); left: 50%; transform: translate(-50%, -140%); background: #1f2a24; color: #fff; padding: 11px 18px; border-radius: 14px; font-size: 13.5px; font-weight: 800; z-index: 400; box-shadow: 0 10px 30px rgba(0,0,0,.25); transition: transform .35s var(--ease); max-width: 90%; text-align: center; }
-    .toast.show { transform: translate(-50%, 0); }
+    .toast { position: fixed; top: calc(14px + env(safe-area-inset-top)); left: 50%; transform: translate(-50%, -30px); opacity: 0; visibility: hidden; transition: transform .35s var(--ease), opacity .25s, visibility .35s; background: #1f2a24; color: #fff; padding: 11px 18px; border-radius: 14px; font-size: 13.5px; font-weight: 800; z-index: 400; box-shadow: 0 10px 30px rgba(0,0,0,.25); max-width: 90%; text-align: center; }
+    .toast.show { transform: translate(-50%, 0); opacity: 1; visibility: visible; }
 
     /* ========== Modals ========== */
     .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,18,.5); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); z-index: 200; align-items: flex-end; justify-content: center; }
@@ -1345,6 +1346,7 @@
       expired.forEach(t => archiveDynamic.appendChild(buildTaskCard(t, { expired: true, done: completedSet.has(t.id) })));
 
       updateAllTimers();
+      if (currentTasksList.length) setTimeout(() => document.body.classList.add('loaded'), 500);
     }
 
     function renderCoursesTab() {
@@ -1685,7 +1687,7 @@
         annToggleWrapper.style.display = 'none';
         dateWrap.style.display = 'block';
         selectTimeMode(typeName.includes('اختبار') ? 'start' : 'end');
-      } 
+      }
     }
 
     function openAddModal() { openModal('alertModal'); }
