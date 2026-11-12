@@ -172,25 +172,42 @@
     .task-title { font-size: 17px; font-weight: 900; color: #141414; line-height: 1.4; }
     .task-desc { font-size: 13px; color: #57534e; line-height: 1.6; margin-top: 4px; white-space: pre-line; }
 
-    /* Countdown capsule */
-    .cd { margin-top: 12px; background: linear-gradient(135deg, var(--primary-green), var(--primary-green-2)); border-radius: 18px; padding: 10px 12px 12px; color: #fff; transition: background .4s; }
-    .cd-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-    .cd-label { font-size: 12px; font-weight: 800; opacity: .85; }
-    .cd-urgency { font-size: 11px; font-weight: 900; padding: 2px 8px; border-radius: 999px; background: rgba(255,255,255,.16); }
-    .cd-urgency:empty { display: none; }
-    .cd-digits { display: flex; align-items: flex-start; justify-content: center; gap: 4px; direction: ltr; }
-    .cd-digits .seg { min-width: 54px; text-align: center; background: rgba(255,255,255,.1); border-radius: 12px; padding: 5px 4px 3px; }
-    .cd-digits .seg b { display: block; font-size: 22px; font-weight: 900; letter-spacing: .5px; font-variant-numeric: tabular-nums; line-height: 1.1; }
-    .cd-digits .seg small { display: block; font-size: 10px; font-weight: 700; opacity: .75; direction: rtl; }
-    .cd-digits i { font-style: normal; font-size: 18px; font-weight: 900; opacity: .5; padding-top: 5px; }
-    .cd-track { margin-top: 10px; height: 6px; border-radius: 999px; background: rgba(255,255,255,.15); overflow: hidden; }
-    .cd-fill { height: 100%; width: 100%; border-radius: 999px; background: #86efac; transition: width 1s linear, background .4s; }
-    .cd.lvl-soon .cd-fill { background: #fcd34d; }
-    .cd.lvl-urgent { background: linear-gradient(135deg, #991b1b, #dc2626); }
-    .cd.lvl-urgent .cd-fill { background: #fecaca; }
-    .cd.lvl-critical { background: linear-gradient(135deg, #7f1d1d, #dc2626); animation: pulseRed 1.6s ease-in-out infinite; }
-    .cd.lvl-critical .cd-fill { background: #fff; }
-    @keyframes pulseRed { 0%,100% { box-shadow: 0 0 0 0 rgba(220,38,38,.45); } 50% { box-shadow: 0 0 0 7px rgba(220,38,38,0); } }
+    /* Compact layout (design B) */
+    .tc-row { display: flex; align-items: flex-start; gap: 12px; }
+    .tc-ico { width: 44px; height: 44px; border-radius: 14px; background: var(--accent-soft); display: grid; place-items: center; font-size: 21px; flex-shrink: 0; }
+    .tc-main { flex: 1; min-width: 0; }
+    .tc-main .card-head { margin-bottom: 3px; }
+    .tc-main .task-title { font-size: 16px; }
+    .tc-main .course-tag { display: block; margin-top: 2px; }
+
+    .tchip { flex-shrink: 0; min-width: 74px; text-align: center; border-radius: 14px; padding: 5px 8px 6px; background: var(--c-disc-soft); color: var(--c-disc); transition: background .3s, color .3s; }
+    .tchip small { display: block; font-size: 10px; font-weight: 800; opacity: .8; }
+    .tchip b { display: block; font-size: 15px; font-weight: 900; unicode-bidi: isolate; font-variant-numeric: tabular-nums; line-height: 1.25; }
+    .tchip.lvl-soon { background: #fef3c7; color: #b45309; }
+    .tchip.lvl-urgent { background: var(--c-exam-soft); color: var(--c-exam); }
+    .tchip.lvl-critical { background: var(--c-exam); color: #fff; animation: pulseRed 1.6s ease-in-out infinite; }
+    .tchip.static { background: var(--bg-cream-2); color: #6b655a; }
+    .tchip.static.done { background: var(--c-disc-soft); color: var(--c-disc); }
+    @keyframes pulseRed { 0%,100% { box-shadow: 0 0 0 0 rgba(220,38,38,.45); } 50% { box-shadow: 0 0 0 6px rgba(220,38,38,0); } }
+
+    .tc-progress { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: rgba(0,0,0,.04); }
+    .tc-progress i { display: block; margin-left: auto; height: 100%; width: 100%; background: var(--c-disc); transition: width 1s linear, background .3s; }
+    .tc-progress.lvl-soon i { background: #f59e0b; }
+    .tc-progress.lvl-urgent i, .tc-progress.lvl-critical i { background: var(--c-exam); }
+
+    .task-card { padding: 14px 16px 12px 14px; }
+    .task-card::before { width: 4px; }
+    .task-card .task-desc { margin-top: 8px; }
+    .task-card .meta-row { margin-top: 8px; }
+    .task-card .card-actions { margin-top: 10px; padding-top: 8px; }
+    .task-card .done-btn, .task-card .attach-btn { height: 34px; }
+    .task-card .icon-act { width: 34px; height: 34px; }
+    body.compact .tc-progress { display: none; }
+
+    /* slimmer stats */
+    .stats-row { gap: 6px; }
+    .stat { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 9px 6px; border-radius: 14px; }
+    .stat b { display: inline; font-size: 17px; }
 
     .nodate-pill, .ended-pill, .done-note { margin-top: 10px; display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 800; padding: 6px 12px; border-radius: 12px; }
     .nodate-pill { background: var(--bg-cream-2); color: #6b655a; }
@@ -1213,44 +1230,31 @@
       const due = parseDue(t);
       const fileTarget = t.fileData || t.fileUrl;
       const id = jsArg(t.id);
+      const live = !opts.expired && !opts.done && due !== null;
 
-      let timeBlock = '';
-      if (opts.expired) {
-        timeBlock = `<div class="ended-pill">⏹ انتهى الموعد</div>`;
-      } else if (opts.done) {
-        timeBlock = `<div class="done-note">🎉 أحسنت! تم الإنجاز</div>`;
-      } else if (due !== null) {
-        const start = getCreatedAt(t);
-        timeBlock = `
-          <div class="cd" data-due="${due}" data-start="${start || ''}">
-            <div class="cd-head">
-              <span class="cd-label">${t.timingMode === 'start' ? '🚀 يبدأ خلال' : '⏳ ينتهي خلال'}</span>
-              <span class="cd-urgency"></span>
-            </div>
-            <div class="cd-digits">
-              <div class="seg"><b data-u="d">00</b><small>يوم</small></div><i>:</i>
-              <div class="seg"><b data-u="h">00</b><small>ساعة</small></div><i>:</i>
-              <div class="seg"><b data-u="m">00</b><small>دقيقة</small></div><i>:</i>
-              <div class="seg"><b data-u="s">00</b><small>ثانية</small></div>
-            </div>
-            <div class="cd-track"><div class="cd-fill"></div></div>
-          </div>`;
-      } else {
-        timeBlock = `<div class="nodate-pill">🗓️ بدون موعد محدد</div>`;
-      }
+      let chip;
+      if (opts.expired) chip = `<div class="tchip static"><small>الحالة</small><b>انتهى</b></div>`;
+      else if (opts.done) chip = `<div class="tchip static done"><small>الحالة</small><b>✓ تم</b></div>`;
+      else if (due === null) chip = `<div class="tchip static"><small>الموعد</small><b>—</b></div>`;
+      else chip = `<div class="tchip" data-due="${due}"><small>${t.timingMode === 'start' ? 'يبدأ خلال' : 'متبقي'}</small><b class="tchip-val">--</b></div>`;
 
       const card = document.createElement('article');
       card.className = `task-card ${m.cls}${opts.nearest ? ' is-nearest' : ''}${opts.done ? ' is-done' : ''}${opts.expired ? ' is-expired' : ''}`;
       card.id = `card-${t.id}`;
       card.innerHTML = `
-        <div class="card-head">
-          <span class="type-badge"><span class="tb-ico">${m.icon}</span>${esc(m.label)}</span>
-          <span class="course-tag">${esc(t.course || 'عام')}</span>
-          ${opts.nearest ? '<span class="nearest-pill">⚡ الأقرب</span>' : ''}
+        <div class="tc-row">
+          <div class="tc-ico">${m.icon}</div>
+          <div class="tc-main">
+            <div class="card-head">
+              <span class="type-badge">${esc(m.label)}</span>
+              ${opts.nearest ? '<span class="nearest-pill" style="margin-inline-start:0">⚡ الأقرب</span>' : ''}
+            </div>
+            <h3 class="task-title">${esc(t.title)}</h3>
+            <span class="course-tag">${esc(t.course || 'عام')}</span>
+          </div>
+          ${chip}
         </div>
-        <h3 class="task-title">${esc(t.title)}</h3>
         ${t.desc ? `<p class="task-desc">${esc(t.desc)}</p>` : ''}
-        ${timeBlock}
         <div class="meta-row">
           ${due !== null ? `<span class="meta-chip">📅 ${esc(formatGregorianDate(t.dueDate))}</span>` : ''}
           <span class="meta-chip">✍️ ${esc(t.author || 'عبدالله')}</span>
@@ -1265,7 +1269,8 @@
           <span class="flex-spacer"></span>
           <button class="icon-act edit" title="تعديل" onclick="openEditModal('${id}')">${ICON_EDIT}</button>
           <button class="icon-act del" title="حذف" onclick="confirmDelete('${id}')">${ICON_DEL}</button>
-        </div>`;
+        </div>
+        ${live ? `<div class="tc-progress" data-due="${due}" data-start="${getCreatedAt(t) || ''}"><i></i></div>` : ''}`;
       return card;
     }
 
@@ -1409,37 +1414,42 @@
     }
 
     // ================= Live countdown =================
+    function timeLevel(diff) {
+      return diff <= ALERT_2H_MS ? 'lvl-critical' : diff <= ALERT_24H_MS ? 'lvl-urgent' : diff <= 72 * H ? 'lvl-soon' : 'lvl-ok';
+    }
+    function setLevel(el, lvl) {
+      if (el.classList.contains(lvl)) return;
+      el.classList.remove('lvl-critical', 'lvl-urgent', 'lvl-soon', 'lvl-ok');
+      el.classList.add(lvl);
+    }
+
     function updateAllTimers() {
       const now = Date.now();
       let needsRerender = false;
       const pad = n => String(n).padStart(2, '0');
 
-      document.querySelectorAll('.cd[data-due]').forEach(el => {
-        const due = Number(el.dataset.due);
-        const diff = due - now;
+      document.querySelectorAll('.tchip[data-due]').forEach(el => {
+        const diff = Number(el.dataset.due) - now;
         if (diff <= 0) { needsRerender = true; return; }
-
         const d = Math.floor(diff / 86400000);
         const h = Math.floor((diff % 86400000) / 3600000);
         const m = Math.floor((diff % 3600000) / 60000);
         const s = Math.floor((diff % 60000) / 1000);
-        el.querySelector('[data-u="d"]').textContent = pad(d);
-        el.querySelector('[data-u="h"]').textContent = pad(h);
-        el.querySelector('[data-u="m"]').textContent = pad(m);
-        el.querySelector('[data-u="s"]').textContent = pad(s);
+        // more than a day: "3ي 11س" — under a day: live "11:24:08"
+        const val = el.querySelector('.tchip-val');
+        val.dir = d >= 1 ? 'rtl' : 'ltr';
+        val.textContent = d >= 1 ? `${d} ي · ${h} س` : `${pad(h)}:${pad(m)}:${pad(s)}`;
+        setLevel(el, timeLevel(diff));
+      });
 
+      document.querySelectorAll('.tc-progress[data-due]').forEach(el => {
+        const due = Number(el.dataset.due);
+        const diff = due - now;
+        if (diff <= 0) return;
         let start = Number(el.dataset.start);
         if (!start || start >= due) start = due - 7 * 24 * H;
-        const pct = Math.max(2, Math.min(100, (diff / (due - start)) * 100));
-        el.querySelector('.cd-fill').style.width = pct + '%';
-
-        const lvl = diff <= ALERT_2H_MS ? 'lvl-critical' : diff <= ALERT_24H_MS ? 'lvl-urgent' : diff <= 72 * H ? 'lvl-soon' : 'lvl-ok';
-        if (!el.classList.contains(lvl)) {
-          el.classList.remove('lvl-critical', 'lvl-urgent', 'lvl-soon', 'lvl-ok');
-          el.classList.add(lvl);
-          el.querySelector('.cd-urgency').textContent =
-            lvl === 'lvl-critical' ? '🔥 أقل من ساعتين' : lvl === 'lvl-urgent' ? '⚡ أقل من 24 ساعة' : '';
-        }
+        el.querySelector('i').style.width = Math.max(2, Math.min(100, (diff / (due - start)) * 100)) + '%';
+        setLevel(el, timeLevel(diff));
       });
 
       if (needsRerender) renderTasks();
