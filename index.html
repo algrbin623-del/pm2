@@ -342,6 +342,8 @@
     .custom-input:focus, .custom-select:focus, .custom-textarea:focus { border-color: var(--primary-green); box-shadow: 0 0 0 3px rgba(27,59,43,.1); }
     .custom-textarea { resize: none; height: 80px; }
     .datetime-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .datetime-row.single { grid-template-columns: 1fr; }
+    .sched-grid .mode-btn { font-size: 12px; }
     .sub-hint { font-size: 11px; color: #8c897f; margin-top: 5px; display: block; }
 
     .file-upload-box { border: 1.5px dashed #c3bcae; border-radius: 16px; padding: 16px; background: #fff; text-align: center; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px; }
@@ -491,15 +493,17 @@
 
       <p style="font-size:15px; font-weight:900; color:#111; margin-bottom:12px;" id="notifStatusTitle">الإشعارات التلقائية عبر التليجرام</p>
 
-      <div class="notif-rule"><span class="nr-ico">⚡</span><div><b>فور النشر</b><span>إشعار فوري عند نشر أي تنبيه أو إعلان جديد.</span></div></div>
-      <div class="notif-rule"><span class="nr-ico">⏳</span><div><b>قبل الموعد بـ 24 ساعة</b><span>تذكير لجميع الأنواع بلا استثناء.</span></div></div>
-      <div class="notif-rule"><span class="nr-ico">🚨</span><div><b>قبل الموعد بساعتين</b><span>تنبيه عاجل أخير لجميع الأنواع.</span></div></div>
+      <div class="notif-rule"><span class="nr-ico">⚡</span><div><b>فور النشر</b><span>رسالة مفصّلة لكل عنصر جديد، تختلف صيغتها حسب النوع والموعد.</span></div></div>
+      <div class="notif-rule"><span class="nr-ico">⏰</span><div><b>عنصر بتاريخ ووقت</b><span>تذكير قبل الموعد بـ 24 ساعة، وتنبيه عاجل قبله بساعتين.</span></div></div>
+      <div class="notif-rule"><span class="nr-ico">📅</span><div><b>عنصر بيوم فقط</b><span>تذكير في اليوم السابق، وتنبيه صباح يوم الموعد.</span></div></div>
+      <div class="notif-rule"><span class="nr-ico">🔄</span><div><b>تعديل الموعد</b><span>إشعار بالموعد الجديد، وتُعاد جدولة التذكيرات تلقائياً.</span></div></div>
+      <div class="notif-rule"><span class="nr-ico">🚫</span><div><b>بدون موعد</b><span>إشعار النشر فقط، دون تذكيرات لاحقة.</span></div></div>
 
       <div class="type-legend">
         <span style="background:var(--c-hw-soft); color:var(--c-hw)">📝 الواجبات</span>
         <span style="background:var(--c-disc-soft); color:var(--c-disc)">💬 المناقشات</span>
         <span style="background:var(--c-exam-soft); color:var(--c-exam)">🚨 الاختبارات (قصير، نصفي، نهائي)</span>
-        <span style="background:var(--c-ann-soft); color:var(--c-ann)">📢 الإعلانات ذات الموعد</span>
+        <span style="background:var(--c-ann-soft); color:var(--c-ann)">📢 الإعلانات (بموعد أو بدونه)</span>
       </div>
 
       <button class="btn-toggle-notif" id="btnNotifToggle" onclick="closeNotifSheet()">تم الفهم ✓</button>
@@ -544,26 +548,31 @@
 
       <div class="form-group">
         <label>العنوان / اسم الملف</label>
-        <input type="text" class="custom-input" id="editTitleInput">
+        <input type="text" class="custom-input" id="editTitleInput" maxlength="150">
       </div>
 
       <div class="form-group">
         <label>اسم الناشر</label>
-        <input type="text" class="custom-input" id="editAuthorInput">
+        <input type="text" class="custom-input" id="editAuthorInput" maxlength="60">
       </div>
 
       <div class="form-group">
         <label>تفاصيل إضافية (اختياري)</label>
-        <textarea class="custom-textarea" id="editDescInput"></textarea>
+        <textarea class="custom-textarea" id="editDescInput" maxlength="2000"></textarea>
       </div>
 
       <div class="form-group" id="editDateGroupWrapper">
-        <label>تاريخ الموعد / الوقت</label>
-        <div class="datetime-row">
+        <label>الموعد</label>
+        <div class="mode-toggle-grid sched-grid" id="editSchedGrid">
+          <button type="button" class="mode-btn" data-sched="timed" onclick="setSchedMode('edit', 'timed')">⏰ تاريخ ووقت</button>
+          <button type="button" class="mode-btn" data-sched="date" onclick="setSchedMode('edit', 'date')">📅 يوم فقط</button>
+          <button type="button" class="mode-btn" data-sched="none" onclick="setSchedMode('edit', 'none')">🚫 بدون موعد</button>
+        </div>
+        <div class="datetime-row" id="editDateTimeRow">
           <input type="time" class="custom-input" id="editTimeInput">
           <input type="date" class="custom-input" id="editDateInput">
         </div>
-        <span class="sub-hint">تغيير الموعد يعيد جدولة تنبيهات التليجرام تلقائياً</span>
+        <span class="sub-hint" id="editSchedHint"></span>
       </div>
 
       <button type="button" class="btn-submit-post" id="btnSaveEdit" onclick="saveTaskEdit()">حفظ التعديلات ✓</button>
@@ -609,17 +618,17 @@
 
       <div class="form-group">
         <label>اسم الناشر</label>
-        <input type="text" class="custom-input" id="taskAuthorInput" placeholder="اكتب اسمك هنا (مثال: عبدالله)">
+        <input type="text" class="custom-input" id="taskAuthorInput" maxlength="60" placeholder="اكتب اسمك هنا (مثال: عبدالله)">
       </div>
 
       <div class="form-group">
         <label>العنوان / اسم الملف</label>
-        <input type="text" class="custom-input" id="taskTitleInput" placeholder="مثال: الاختبار النصفي / المادة كاملة / واجب 1">
+        <input type="text" class="custom-input" id="taskTitleInput" maxlength="150" placeholder="مثال: الاختبار النصفي / المادة كاملة / واجب 1">
       </div>
 
       <div class="form-group">
         <label>تفاصيل إضافية (اختياري)</label>
-        <textarea class="custom-textarea" id="taskDescInput" placeholder="أي ملاحظات أو تعليمات إضافية..."></textarea>
+        <textarea class="custom-textarea" id="taskDescInput" maxlength="2000" placeholder="أي ملاحظات أو تعليمات إضافية..."></textarea>
       </div>
 
       <div class="form-group">
@@ -638,24 +647,25 @@
         <input type="url" class="custom-input" id="taskFileInput" placeholder="https://... رابط الملف الخارجي">
       </div>
 
-      <div class="announcement-toggle-box" id="announcementToggleWrapper" style="display: none;">
-        <label for="enableAnnouncementDate">تحديد تاريخ ووقت للإعلان؟</label>
-        <input type="checkbox" id="enableAnnouncementDate" onchange="toggleAnnouncementDateInput(this.checked)">
-      </div>
-
       <div class="form-group" id="dateGroupWrapper">
-        <label id="dateGroupTitle">موعد الانتهاء أو تاريخ الاختبار</label>
+        <label id="dateGroupTitle">الموعد</label>
+
+        <div class="mode-toggle-grid sched-grid" id="addSchedGrid">
+          <button type="button" class="mode-btn active" data-sched="timed" onclick="setSchedMode('add', 'timed')">⏰ تاريخ ووقت</button>
+          <button type="button" class="mode-btn" data-sched="date" onclick="setSchedMode('add', 'date')">📅 يوم فقط</button>
+          <button type="button" class="mode-btn" data-sched="none" onclick="setSchedMode('add', 'none')">🚫 بدون موعد</button>
+        </div>
 
         <div class="mode-toggle-grid" id="timingModeGrid">
           <button type="button" class="mode-btn active" id="btnModeEnd" onclick="selectTimeMode('end')">موعد انتهاء ⏳</button>
           <button type="button" class="mode-btn" id="btnModeStart" onclick="selectTimeMode('start')">موعد بدء 🚀</button>
         </div>
 
-        <div class="datetime-row">
+        <div class="datetime-row" id="addDateTimeRow">
           <input type="time" class="custom-input" id="taskTimeInput" value="23:59">
           <input type="date" class="custom-input" id="taskDateInput">
         </div>
-        <span class="sub-hint">بتوقيت السعودية • سيصل تذكير تليجرام قبل الموعد بـ 24 ساعة وبساعتين</span>
+        <span class="sub-hint" id="addSchedHint"></span>
       </div>
 
       <button type="button" class="btn-submit-post" id="btnPublish" onclick="handlePublish()">نشر العنصر والتنبيه</button>
@@ -729,10 +739,39 @@
     }
     function jsArg(str) { return esc(String(str ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'")); }
 
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+    const pad2 = n => String(n).padStart(2, '0');
+
+    // ---------- Saudi time (UTC+3 all year, no DST) ----------
+    // Every date is entered, stored and shown in Saudi time, whatever the device's own zone.
+    const RIYADH_OFFSET = 3 * H;
+    const DAY_MS = 24 * H;
+    function riyadhParts(ms) {
+      const d = new Date(ms + RIYADH_OFFSET);
+      return { y: d.getUTCFullYear(), mo: d.getUTCMonth() + 1, d: d.getUTCDate(), h: d.getUTCHours(), mi: d.getUTCMinutes(), wd: d.getUTCDay() };
+    }
+    function riyadhDayNumber(ms) { return Math.floor((ms + RIYADH_OFFSET) / DAY_MS); }
+    function riyadhDayStart(ms) { return riyadhDayNumber(ms) * DAY_MS - RIYADH_OFFSET; }
+    function riyadhDateStr(ms) { const p = riyadhParts(ms); return `${p.y}-${pad2(p.mo)}-${pad2(p.d)}`; }
+    function riyadhTimeStr(ms) { const p = riyadhParts(ms); return `${pad2(p.h)}:${pad2(p.mi)}`; }
+    // "2026-11-17" + "14:30" → ISO; without a time the item lasts the whole day (until 23:59:59)
+    function riyadhToIso(dateStr, timeStr) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr || '')) return '';
+      const d = new Date(`${dateStr}T${timeStr ? timeStr + ':00' : '23:59:59'}+03:00`);
+      return isNaN(d.getTime()) ? '' : d.toISOString();
+    }
+
     function parseDue(t) {
       if (!t || !t.dueDate) return null;
       const ms = new Date(t.dueDate).getTime();
       return isNaN(ms) ? null : ms;
+    }
+    // A dated item without a specific hour. Old items (no hasTime field) keep their time.
+    function isAllDay(t) { return !!(t && t.dueDate) && t.hasTime === false; }
+    function sameSchedule(a, b) {
+      const da = parseDue(a), db = parseDue(b);
+      if (da !== db) return false;
+      return da === null || isAllDay(a) === isAllDay(b);
     }
     function getCreatedAt(t) {
       if (t.createdAt) return Number(t.createdAt);
@@ -740,26 +779,22 @@
       return m ? Number(m[1]) : null;
     }
 
-    function formatGregorianDate(isoStr) {
+    const DAYS_AR = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+
+    function formatGregorianDate(isoStr, withTime = true) {
       if (!isoStr) return 'بدون موعد محدد';
-      const d = new Date(isoStr);
-      if (isNaN(d.getTime())) return 'بدون موعد محدد';
-
-      const daysArabic = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
-      const dayName = daysArabic[d.getDay()];
-
-      const year = d.getFullYear();
-      const month = String(d.getMonth() + 1).padStart(2, '0');
-      const day = String(d.getDate()).padStart(2, '0');
-
-      let hours = d.getHours();
-      const minutes = String(d.getMinutes()).padStart(2, '0');
-      const ampm = hours >= 12 ? 'م' : 'ص';
-      hours = hours % 12;
-      hours = hours ? hours : 12;
-      const strTime = `${String(hours).padStart(2, '0')}:${minutes} ${ampm}`;
-
-      return `${dayName}، ${year}/${month}/${day} - ${strTime}`;
+      const ms = new Date(isoStr).getTime();
+      if (isNaN(ms)) return 'بدون موعد محدد';
+      const p = riyadhParts(ms);
+      const datePart = `${DAYS_AR[p.wd]}، ${p.y}/${pad2(p.mo)}/${pad2(p.d)}`;
+      if (!withTime) return datePart;
+      const h12 = p.h % 12 || 12;
+      return `${datePart} - ${pad2(h12)}:${pad2(p.mi)} ${p.h >= 12 ? 'م' : 'ص'}`;
+    }
+    // Due text for any item: full date+time, a whole day, or no date
+    function formatDue(t) {
+      if (parseDue(t) === null) return 'بدون موعد محدد';
+      return isAllDay(t) ? `${formatGregorianDate(t.dueDate, false)} (طوال اليوم)` : formatGregorianDate(t.dueDate);
     }
 
     function arCount(n, one, two, few, many) {
@@ -775,6 +810,22 @@
       const mTxt = arCount(m, 'دقيقة واحدة', 'دقيقتان', 'دقائق', 'دقيقة');
       if (h === 0) return mTxt;
       return m ? `${hTxt} و ${mTxt}` : hTxt;
+    }
+    // Longer spans: "3 أيام و 4 ساعات"
+    function humanDuration(ms) {
+      if (ms < DAY_MS) return humanRemaining(ms);
+      const totalH = Math.round(ms / H);
+      const d = Math.floor(totalH / 24), h = totalH % 24;
+      const dTxt = arCount(d, 'يوم واحد', 'يومان', 'أيام', 'يوماً');
+      return h ? `${dTxt} و ${arCount(h, 'ساعة واحدة', 'ساعتان', 'ساعات', 'ساعة')}` : dTxt;
+    }
+    // Calendar distance in Saudi days: اليوم / غداً / بعد غد / بعد 5 أيام
+    function relativeDay(due, now) {
+      const n = riyadhDayNumber(due) - riyadhDayNumber(now);
+      if (n <= 0) return 'اليوم';
+      if (n === 1) return 'غداً';
+      if (n === 2) return 'بعد غد';
+      return `بعد ${arCount(n, '', '', 'أيام', 'يوماً')}`;
     }
 
     let toastTimer = null;
@@ -1060,71 +1111,193 @@
     }
 
     // ================= Telegram =================
-    async function sendRawTelegramMsg(message) {
-      try {
-        const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            chat_id: TELEGRAM_CHAT_ID,
-            text: message,
-            parse_mode: 'HTML',
-            disable_web_page_preview: true
-          })
-        });
-        const json = await res.json().catch(() => ({}));
-        return !!json.ok;
-      } catch (error) {
-        console.error('خطأ في إرسال التليجرام:', error);
-        return false;
-      }
+    const TG_MAX = 4096;
+    const TG_SEP = '━━━━━━━━━━━━━━';
+
+    // HTML → plain text, used only as a fallback if Telegram rejects the formatting
+    function tgHtmlToPlain(html) {
+      return String(html)
+        .replace(/<a href="([^"]*)">([^<]*)<\/a>/g, '$2: $1')
+        .replace(/<[^>]+>/g, '')
+        .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&');
     }
+
+    // Sends with HTML formatting; retries on rate-limit / network / server errors,
+    // and falls back to plain text if the HTML is ever rejected, so the message still arrives.
+    async function sendRawTelegramMsg(message) {
+      let text = String(message || '');
+      let html = true;
+      if (text.length > TG_MAX) { text = tgHtmlToPlain(text).slice(0, TG_MAX - 10) + '…'; html = false; }
+
+      for (let attempt = 0; attempt < 4; attempt++) {
+        try {
+          const body = { chat_id: TELEGRAM_CHAT_ID, text, link_preview_options: { is_disabled: true } };
+          if (html) body.parse_mode = 'HTML';
+          const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          });
+          const json = await res.json().catch(() => ({}));
+          if (json.ok) return true;
+
+          const code = json.error_code || res.status;
+          const desc = json.description || '';
+          if (code === 429) {                                   // flood limit → wait as told
+            await sleep(Math.min(Number(json.parameters && json.parameters.retry_after) || 3, 20) * 1000);
+            continue;
+          }
+          if (code === 400 && html && /parse|entit|tag/i.test(desc)) {   // bad HTML → resend as plain text
+            text = tgHtmlToPlain(text); html = false;
+            continue;
+          }
+          if (code >= 500) { await sleep(1500 * (attempt + 1)); continue; }
+          console.error('Telegram رفض الرسالة:', code, desc);
+          return false;
+        } catch (error) {
+          console.error('خطأ في إرسال التليجرام:', error);
+          await sleep(1500 * (attempt + 1));
+        }
+      }
+      return false;
+    }
+
+    function isExamType(t) { return (t.type || '').includes('اختبار'); }
 
     function dueLabelFor(t) {
-      const isExam = (t.type || '').includes('اختبار');
-      if (t.timingMode === 'start') return isExam ? 'موعد بدء الاختبار' : 'موعد البدء';
+      if (t.timingMode === 'start') {
+        if (isAllDay(t)) return isExamType(t) ? 'موعد الاختبار' : 'الموعد';
+        return isExamType(t) ? 'موعد بدء الاختبار' : 'موعد البدء';
+      }
       if (t.type === 'إعلان') return 'الموعد';
-      return 'موعد التسليم النهائي';
+      if (isExamType(t)) return 'موعد الاختبار';
+      if (t.type === 'مناقشة') return 'آخر موعد للمشاركة';
+      return 'آخر موعد للتسليم';
     }
 
-    function buildPublishMessage(t) {
-      const m = getTypeMeta(t.type);
-      const lines = [
-        `${m.icon} <b>${esc(m.tgNew)}</b>`,
-        `━━━━━━━━━━━━━━`,
-        `📚 <b>المقرر:</b> ${esc(t.course)}`,
+    function tgDetails(desc) {
+      const s = String(desc || '').trim();
+      if (!s) return null;
+      const cut = s.length > 900 ? s.slice(0, 900).trimEnd() + '…' : s;
+      return `<blockquote>${esc(cut)}</blockquote>`;
+    }
+
+    function tgHeaderLines(t, head) {
+      return [
+        head,
+        TG_SEP,
+        `📚 <b>المقرر:</b> ${esc(t.course || 'عام')}`,
         `📌 <b>العنوان:</b> ${esc(t.title)}`
       ];
-      if (t.dueDate) lines.push(`📅 <b>${dueLabelFor(t)}:</b> ${esc(formatGregorianDate(t.dueDate))}`);
-      if (t.desc) lines.push(`📝 <b>التفاصيل:</b> ${esc(t.desc.slice(0, 400))}`);
-      if (t.dueDate) lines.push('', `🔔 سيصلكم تذكير قبل الموعد بـ 24 ساعة وبساعتين`);
-      lines.push('', `🔗 <a href="${APP_URL}">افتح المنصة</a>`);
+    }
+
+    function tgRemainingLine(t, now) {
+      const due = parseDue(t);
+      if (due === null || due <= now) return null;
+      const label = t.timingMode === 'start' ? 'يبدأ بعد' : 'المتبقي';
+      if (isAllDay(t)) return `⏱ <b>متى:</b> ${relativeDay(due, now)}`;
+      return `⏱ <b>${label}:</b> ${humanDuration(due - now)}`;
+    }
+
+    // What reminders are still to come, given the current moment
+    function tgRemindersNote(t, now) {
+      const due = parseDue(t);
+      if (due === null || due <= now) return null;
+      const tier = reminderTier(t, now);
+      if (tier === '2h') return null;
+      if (isAllDay(t)) {
+        const daysLeft = riyadhDayNumber(due) - riyadhDayNumber(now);
+        if (daysLeft <= 0 || tier === '24h') return '🔔 سيصلكم تذكير صباح يوم الموعد';
+        return '🔔 سيصلكم تذكير في اليوم السابق وصباح يوم الموعد';
+      }
+      return tier === '24h' ? '🔔 سيصلكم تنبيه عاجل قبل الموعد بساعتين' : '🔔 سيصلكم تذكير قبل الموعد بـ 24 ساعة وبساعتين';
+    }
+
+    function tgFooter(t, extra) {
+      const lines = [TG_SEP];
+      if (extra) lines.push(extra);
+      lines.push(`✍️ ${esc(t.author || 'عبدالله')}  •  🔗 <a href="${APP_URL}">فتح المنصة</a>`);
+      return lines;
+    }
+
+    // New item: wording differs for timed items, whole-day items, undated items and announcements
+    function buildPublishMessage(t) {
+      const m = getTypeMeta(t.type);
+      const now = Date.now();
+      const due = parseDue(t);
+      const isAnn = t.type === 'إعلان';
+      const lines = tgHeaderLines(t, `${m.icon} <b>${esc(m.tgNew)}</b>`);
+
+      if (due !== null) {
+        lines.push(`🗓 <b>${dueLabelFor(t)}:</b> ${esc(formatDue(t))}`);
+        const rem = tgRemainingLine(t, now);
+        if (rem) lines.push(rem);
+      } else if (!isAnn) {
+        lines.push(`🗓 <b>الموعد:</b> مفتوح — بدون موعد محدد`);
+      }
+
+      const det = tgDetails(t.desc);
+      if (det) lines.push('', isAnn ? '📝 <b>نص الإعلان:</b>' : '📝 <b>التفاصيل:</b>', det);
+      if (t.fileData || t.fileUrl) lines.push('📎 يتضمن مرفقاً — متاح عبر المنصة');
+
+      lines.push(...tgFooter(t, tgRemindersNote(t, now)));
       return lines.join('\n');
     }
 
-    function buildReminderMessage(t, tier, remainingMs) {
+    function buildReminderMessage(t, tier, now = Date.now()) {
       const m = getTypeMeta(t.type);
-      const verb = t.timingMode === 'start' ? 'على البدء' : 'على الانتهاء';
-      let remainText;
-      if (tier === '24h') {
-        remainText = remainingMs > 23 * H ? '24 ساعة' : `أقل من 24 ساعة (${humanRemaining(remainingMs)})`;
-      } else {
-        remainText = remainingMs > 105 * 60000 ? 'ساعتان فقط' : `أقل من ساعتين (${humanRemaining(remainingMs)})`;
-      }
-      const head = tier === '2h'
-        ? `⚠️ <b>تنبيه عاجل | ${m.icon} ${esc(m.label)}</b>`
-        : `⏳ <b>تذكير | ${m.icon} ${esc(m.label)}</b>`;
+      const due = parseDue(t);
+      const start = t.timingMode === 'start';
+      const exam = isExamType(t);
+      const tag = `${m.icon} ${esc(m.label)}`;
+      let head, remLine = null;
 
-      return [
-        head,
-        `━━━━━━━━━━━━━━`,
-        `📚 <b>المقرر:</b> ${esc(t.course)}`,
-        `📌 <b>العنوان:</b> ${esc(t.title)}`,
-        `⏱ <b>المتبقي ${verb}:</b> ${remainText}`,
-        `📅 <b>${dueLabelFor(t)}:</b> ${esc(formatGregorianDate(t.dueDate))}`,
-        '',
-        `🔗 <a href="${APP_URL}">افتح المنصة</a>`
-      ].join('\n');
+      if (isAllDay(t)) {
+        const today = tier === '2h';
+        let what;
+        if (t.type === 'إعلان') what = today ? 'الموعد اليوم' : 'الموعد غداً';
+        else if (start) what = today ? 'يبدأ اليوم' : 'يبدأ غداً';
+        else what = today ? 'اليوم آخر موعد' : 'آخر موعد غداً';
+        head = today ? `📣 <b>${what} | ${tag}</b>` : `⏳ <b>تذكير: ${what} | ${tag}</b>`;
+      } else {
+        const remainingMs = due - now;
+        let remainText;
+        if (tier === '24h') remainText = remainingMs > 23 * H ? '24 ساعة' : `أقل من 24 ساعة (${humanRemaining(remainingMs)})`;
+        else remainText = remainingMs > 105 * 60000 ? 'ساعتان فقط' : `أقل من ساعتين (${humanRemaining(remainingMs)})`;
+        head = tier === '2h' ? `⚠️ <b>تنبيه عاجل | ${tag}</b>` : `⏳ <b>تذكير | ${tag}</b>`;
+        remLine = `⏱ <b>${start ? 'يبدأ بعد' : 'المتبقي'}:</b> ${remainText}`;
+      }
+
+      const lines = tgHeaderLines(t, head);
+      if (remLine) lines.push(remLine);
+      lines.push(`🗓 <b>${dueLabelFor(t)}:</b> ${esc(formatDue(t))}`);
+
+      let closing = null;
+      if (exam) closing = '🍀 بالتوفيق للجميع';
+      else if (tier === '2h' && !start && (t.type === 'واجب' || t.type === 'مناقشة')) closing = '✅ تأكّدوا من التسليم قبل إغلاق الموعد';
+      if (closing) lines.push('', closing);
+
+      lines.push(TG_SEP, `🔗 <a href="${APP_URL}">فتح المنصة</a>`);
+      return lines.join('\n');
+    }
+
+    // Sent when an edit adds, changes or removes an item's date
+    function buildScheduleUpdateMessage(t, prev) {
+      const m = getTypeMeta(t.type);
+      const now = Date.now();
+      const lines = tgHeaderLines(t, `🔄 <b>تحديث الموعد | ${m.icon} ${esc(m.label)}</b>`);
+
+      if (parseDue(t) !== null) {
+        lines.push(`🗓 <b>الموعد الجديد:</b> ${esc(formatDue(t))}`);
+        const rem = tgRemainingLine(t, now);
+        if (rem) lines.push(rem);
+      } else {
+        lines.push(`🗓 <b>الموعد:</b> أُلغي — أصبح بدون موعد محدد`);
+      }
+      if (prev && parseDue(prev) !== null) lines.push(`↩️ <b>الموعد السابق:</b> <s>${esc(formatDue(prev))}</s>`);
+
+      lines.push(...tgFooter(t, tgRemindersNote(t, now)));
+      return lines.join('\n');
     }
 
     // Kept for compatibility with the old call signature
@@ -1191,8 +1364,33 @@
       } catch (e) {}
     }
 
-    // Same rule for every type: one reminder within 24h of the due time,
-    // and one urgent reminder within 2h of it.
+    // Which reminder is due right now (null = none).
+    //  • Timed items: '24h' within 24 hours of the time, '2h' within 2 hours.
+    //  • Whole-day items: '24h' from 09:00 the day before, '2h' from 07:00 on the day itself.
+    //  • Undated items never get reminders.
+    function reminderTier(t, now) {
+      const due = parseDue(t);
+      if (due === null || due <= now) return null;
+      if (isAllDay(t)) {
+        const dayStart = riyadhDayStart(due);
+        if (now >= dayStart + 7 * H) return '2h';
+        if (now >= dayStart - 15 * H && now < dayStart) return '24h';
+        return null;
+      }
+      const diff = due - now;
+      if (diff <= ALERT_2H_MS) return '2h';
+      if (diff <= ALERT_24H_MS) return '24h';
+      return null;
+    }
+
+    // When an item is published (or re-dated) already inside a reminder window,
+    // the publish/update message covers it — don't send a reminder right after it.
+    function markPassedTiers(task, now) {
+      const tier = reminderTier(task, now);
+      if (tier === '2h') { task.notified_24h = true; task.notified_2h = true; }
+      else if (tier === '24h') task.notified_24h = true;
+    }
+
     async function checkScheduledAlerts() {
       if (alertCheckRunning || isSavingActive) return;
       alertCheckRunning = true;
@@ -1200,18 +1398,13 @@
         const now = Date.now();
         for (const t of currentTasksList.slice()) {
           if (!t || !t.id || t.type === 'ملف مادة') continue;
-          const due = parseDue(t);
-          if (due === null) continue;
-          const diff = due - now;
-          if (diff <= 0) continue;
-
-          let tier = null, flag = null;
-          if (diff <= ALERT_2H_MS) { tier = '2h'; flag = 'notified_2h'; }
-          else if (diff <= ALERT_24H_MS) { tier = '24h'; flag = 'notified_24h'; }
-          if (!tier || alreadySent(t, flag)) continue;
+          const tier = reminderTier(t, now);
+          if (!tier) continue;
+          const flag = tier === '2h' ? 'notified_2h' : 'notified_24h';
+          if (alreadySent(t, flag)) continue;
 
           if (await claimAlertFlag(t, flag)) {
-            const ok = await sendRawTelegramMsg(buildReminderMessage(t, tier, due - Date.now()));
+            const ok = await sendRawTelegramMsg(buildReminderMessage(t, tier, Date.now()));
             if (!ok) await releaseAlertFlag(t, flag);      // let the next check retry
           }
         }
@@ -1235,7 +1428,8 @@
       let chip;
       if (opts.expired) chip = `<div class="tchip static"><small>الحالة</small><b>انتهى</b></div>`;
       else if (opts.done) chip = `<div class="tchip static done"><small>الحالة</small><b>✓ تم</b></div>`;
-      else if (due === null) chip = `<div class="tchip static"><small>الموعد</small><b>—</b></div>`;
+      else if (due === null) chip = `<div class="tchip static"><small>الموعد</small><b>${t.type === 'إعلان' ? '—' : 'مفتوح'}</b></div>`;
+      else if (isAllDay(t)) chip = `<div class="tchip" data-due="${due}" data-allday="1"><small>${t.timingMode === 'start' ? 'يبدأ' : 'الموعد'}</small><b class="tchip-val">--</b></div>`;
       else chip = `<div class="tchip" data-due="${due}"><small>${t.timingMode === 'start' ? 'يبدأ خلال' : 'متبقي'}</small><b class="tchip-val">--</b></div>`;
 
       const card = document.createElement('article');
@@ -1256,7 +1450,7 @@
         </div>
         ${t.desc ? `<p class="task-desc">${esc(t.desc)}</p>` : ''}
         <div class="meta-row">
-          ${due !== null ? `<span class="meta-chip">📅 ${esc(formatGregorianDate(t.dueDate))}</span>` : ''}
+          ${due !== null ? `<span class="meta-chip">📅 ${esc(formatDue(t))}</span>` : ''}
           <span class="meta-chip">✍️ ${esc(t.author || 'عبدالله')}</span>
         </div>
         <div class="card-actions">
@@ -1431,6 +1625,15 @@
       document.querySelectorAll('.tchip[data-due]').forEach(el => {
         const diff = Number(el.dataset.due) - now;
         if (diff <= 0) { needsRerender = true; return; }
+        if (el.dataset.allday) {
+          // whole-day item: show the calendar day, not a ticking clock
+          const n = riyadhDayNumber(Number(el.dataset.due)) - riyadhDayNumber(now);
+          const val = el.querySelector('.tchip-val');
+          val.dir = 'rtl';
+          val.textContent = n <= 0 ? 'اليوم' : n === 1 ? 'غداً' : `${n} ${n <= 10 ? 'أيام' : 'يوماً'}`;
+          setLevel(el, n <= 0 ? 'lvl-urgent' : n === 1 ? 'lvl-soon' : 'lvl-ok');
+          return;
+        }
         const d = Math.floor(diff / 86400000);
         const h = Math.floor((diff % 86400000) / 3600000);
         const m = Math.floor((diff % 3600000) / 60000);
@@ -1483,16 +1686,16 @@
         dateWrap.style.display = 'none';
       } else {
         dateWrap.style.display = 'block';
-        if (task.dueDate) {
-          const d = new Date(task.dueDate);
-          if (!isNaN(d.getTime())) {
-            const yyyy = d.getFullYear();
-            const mm = String(d.getMonth() + 1).padStart(2, '0');
-            const dd = String(d.getDate()).padStart(2, '0');
-            const hh = String(d.getHours()).padStart(2, '0');
-            const min = String(d.getMinutes()).padStart(2, '0');
-            document.getElementById('editDateInput').value = `${yyyy}-${mm}-${dd}`;
-            document.getElementById('editTimeInput').value = `${hh}:${min}`;
+        const due = parseDue(task);
+        if (due === null) {
+          setSchedMode('edit', 'none');
+        } else {
+          document.getElementById('editDateInput').value = riyadhDateStr(due);
+          if (isAllDay(task)) {
+            setSchedMode('edit', 'date');
+          } else {
+            document.getElementById('editTimeInput').value = riyadhTimeStr(due);
+            setSchedMode('edit', 'timed');
           }
         }
       }
@@ -1505,15 +1708,54 @@
       closeModal('editModal');
     }
 
+    // ---------- Schedule mode: 'timed' (date + time) | 'date' (whole day) | 'none' ----------
+    const schedMode = { add: 'timed', edit: 'timed' };
+    const SCHED_HINTS = {
+      timed: 'بتوقيت السعودية • تذكير تليجرام قبل الموعد بـ 24 ساعة وبساعتين',
+      date: 'يوم كامل بلا ساعة محددة • تذكير في اليوم السابق وصباح يوم الموعد',
+      none: 'بدون موعد • يُرسل إشعار النشر فقط، ويبقى العنصر ظاهراً حتى يُنجز أو يُحذف'
+    };
+    function schedEls(scope) {
+      const add = scope === 'add';
+      return {
+        grid: document.getElementById(add ? 'addSchedGrid' : 'editSchedGrid'),
+        row: document.getElementById(add ? 'addDateTimeRow' : 'editDateTimeRow'),
+        date: document.getElementById(add ? 'taskDateInput' : 'editDateInput'),
+        time: document.getElementById(add ? 'taskTimeInput' : 'editTimeInput'),
+        hint: document.getElementById(add ? 'addSchedHint' : 'editSchedHint')
+      };
+    }
+    function setSchedMode(scope, mode) {
+      schedMode[scope] = mode;
+      const el = schedEls(scope);
+      el.grid.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.sched === mode));
+      el.row.style.display = mode === 'none' ? 'none' : '';
+      el.row.classList.toggle('single', mode === 'date');
+      el.time.style.display = mode === 'timed' ? '' : 'none';
+      if (mode !== 'none' && !el.date.value) el.date.value = riyadhDateStr(Date.now());
+      if (mode === 'timed' && !el.time.value) el.time.value = '23:59';
+      if (scope === 'add') document.getElementById('timingModeGrid').style.display = mode === 'none' ? 'none' : '';
+      el.hint.textContent = SCHED_HINTS[mode] + (scope === 'edit' ? ' • تغيير الموعد يرسل إشعار تحديث' : '');
+    }
+    // Reads the form into { dueDate, hasTime }. A cleared time field is treated as "whole day", never as an error.
+    function readSchedule(scope) {
+      const mode = schedMode[scope];
+      if (mode === 'none') return { ok: true, dueDate: '', hasTime: false };
+      const el = schedEls(scope);
+      const dateVal = (el.date.value || '').trim();
+      if (!dateVal) return { ok: false, error: 'يرجى اختيار التاريخ، أو اختر «بدون موعد»' };
+      const timeMatch = /^(\d{2}:\d{2})/.exec(el.time.value || '');
+      const timed = mode === 'timed' && !!timeMatch;
+      const iso = riyadhToIso(dateVal, timed ? timeMatch[1] : null);
+      if (!iso) return { ok: false, error: 'التاريخ أو الوقت غير صالح، يرجى التحقق منه' };
+      return { ok: true, dueDate: iso, hasTime: timed };
+    }
+
     async function saveTaskEdit() {
       if (!editingTaskId) return;
       const taskId = editingTaskId;
       const local = currentTasksList.find(t => t && t.id === taskId);
       if (!local) return;
-
-      const btn = document.getElementById('btnSaveEdit');
-      btn.innerText = 'جاري الحفظ...';
-      btn.disabled = true;
 
       const fields = {
         course: document.getElementById('editCourseSelect').value,
@@ -1521,107 +1763,132 @@
         author: document.getElementById('editAuthorInput').value.trim() || 'عبدالله',
         desc: document.getElementById('editDescInput').value.trim()
       };
-      const dateVal = document.getElementById('editDateInput').value;
-      const timeVal = document.getElementById('editTimeInput').value || '23:59';
-      const newDue = (local.type !== 'ملف مادة' && dateVal) ? new Date(`${dateVal}T${timeVal}:00`).toISOString() : null;
+      if (!fields.title) { alert('يرجى كتابة العنوان'); return; }
 
+      let sched = null;
+      if (local.type !== 'ملف مادة') {
+        sched = readSchedule('edit');
+        if (!sched.ok) { alert(sched.error); return; }
+        const newDue = parseDue(sched);
+        if (newDue !== null && newDue <= Date.now() && !sameSchedule(local, sched) &&
+            !confirm('الموعد المحدد قد مضى بالفعل، وسينتقل العنصر إلى الأرشيف. هل تريد المتابعة؟')) return;
+      }
+
+      const btn = document.getElementById('btnSaveEdit');
+      btn.innerText = 'جاري الحفظ...';
+      btn.disabled = true;
+
+      let change = null;   // { prev, task } when the date was added / changed / removed
       const ok = await commitChange(list => {
+        change = null;
         const task = list.find(t => t.id === taskId);
         if (!task) return;
         Object.assign(task, fields);
-        if (newDue && newDue !== task.dueDate) {
-          task.dueDate = newDue;
-          // new deadline → schedule both Telegram reminders again
+        if (sched && !sameSchedule(task, sched)) {
+          const prev = { dueDate: task.dueDate || '', hasTime: task.hasTime };
+          task.dueDate = sched.dueDate;
+          task.hasTime = sched.hasTime;
+          // new date → schedule the Telegram reminders again
           task.notified_24h = false;
           task.notified_2h = false;
           delete task.sentAlerts;
+          markPassedTiers(task, Date.now());
+          change = { prev, task: { ...task } };
         }
       });
 
       btn.innerText = 'حفظ التعديلات ✓';
       btn.disabled = false;
-      if (ok) {
-        closeEditModal();
-        showToast('✓ تم حفظ التعديلات');
-        checkScheduledAlerts();
+      if (!ok) { showToast('تعذر الحفظ، تحقق من الاتصال وحاول مجدداً'); return; }
+
+      closeEditModal();
+      if (change) {
+        showToast('✓ تم حفظ التعديلات، جارٍ إشعار المجموعة بالموعد الجديد');
+        const sent = await sendRawTelegramMsg(buildScheduleUpdateMessage(change.task, change.prev));
+        showToast(sent ? '✓ تم الحفظ وإرسال إشعار تحديث الموعد' : '⚠️ تم الحفظ، لكن تعذر إرسال إشعار التليجرام');
       } else {
-        showToast('تعذر الحفظ، تحقق من الاتصال وحاول مجدداً');
+        showToast('✓ تم حفظ التعديلات');
       }
+      checkScheduledAlerts();
     }
 
+    let isPublishing = false;
     async function handlePublish() {
+      if (isPublishing) return;
       const course = document.getElementById('courseSelect').value.trim();
       const author = document.getElementById('taskAuthorInput').value.trim() || 'عبدالله';
       const title = document.getElementById('taskTitleInput').value.trim();
       const desc = document.getElementById('taskDescInput').value.trim();
       const fileUrl = document.getElementById('taskFileInput').value.trim();
-      const dateVal = document.getElementById('taskDateInput').value;
-      const timeVal = document.getElementById('taskTimeInput').value || '23:59';
       const btn = document.getElementById('btnPublish');
+      const type = currentType;
 
       if (!course) { alert('يرجى اختيار المادة الأكاديمية'); return; }
       if (!title) { alert('يرجى كتابة عنوان التنبيه أو اسم الملف'); return; }
+      if (fileUrl && !/^https?:\/\//i.test(fileUrl)) { alert('الرابط الخارجي يجب أن يبدأ بـ https://'); return; }
 
+      let sched = { ok: true, dueDate: '', hasTime: false };
+      if (type !== 'ملف مادة') {
+        sched = readSchedule('add');
+        if (!sched.ok) { alert(sched.error); return; }
+        const due = parseDue(sched);
+        if (due !== null && due <= Date.now() &&
+            !confirm('الموعد المحدد قد مضى بالفعل، وسيظهر العنصر مباشرة في الأرشيف. هل تريد المتابعة؟')) return;
+      }
+
+      isPublishing = true;
       btn.innerText = 'جاري النشر والمزامنة...';
       btn.disabled = true;
 
-      let dueIso = '';
-      if (currentType !== 'ملف مادة') {
-        if (currentType === 'إعلان') {
-          const isCheck = document.getElementById('enableAnnouncementDate').checked;
-          if (isCheck && dateVal) dueIso = new Date(`${dateVal}T${timeVal}:00`).toISOString();
-        } else if (dateVal) {
-          dueIso = new Date(`${dateVal}T${timeVal}:00`).toISOString();
+      try {
+        const nowMs = Date.now();
+        const newTask = {
+          id: 'task-' + nowMs,
+          type: type,
+          course: course,
+          title: title,
+          desc: desc,
+          fileUrl: fileUrl,
+          fileData: uploadedBase64File || '',
+          author: author,
+          dueDate: sched.dueDate,
+          hasTime: sched.hasTime,
+          timingMode: sched.dueDate ? currentTimingMode : 'end',
+          createdAt: nowMs,
+          notified_24h: false,
+          notified_2h: false
+        };
+        markPassedTiers(newTask, nowMs);
+
+        const savedOk = await commitChange(list => { list.unshift(newTask); });
+        if (!savedOk) {
+          showToast('تعذر النشر، تحقق من الاتصال وحاول مجدداً');
+          return;
         }
+
+        document.getElementById('taskTitleInput').value = '';
+        document.getElementById('taskDescInput').value = '';
+        document.getElementById('taskFileInput').value = '';
+        document.getElementById('localFileInput').value = '';
+        document.getElementById('selectedFileName').style.display = 'none';
+        uploadedBase64File = '';
+        closeAddModal();
+
+        if (type === 'ملف مادة') {
+          showToast('📁 تم رفع الملف للمادة');
+        } else {
+          showToast('✓ تم النشر، جارٍ إرسال إشعار التليجرام...');
+          const sent = await sendRawTelegramMsg(buildPublishMessage(newTask));
+          showToast(sent ? '✓ تم النشر وإرسال إشعار التليجرام' : '⚠️ تم النشر، لكن تعذر إرسال إشعار التليجرام');
+        }
+      } catch (err) {
+        console.error('خطأ أثناء النشر:', err);
+        showToast('حدث خطأ غير متوقع، حاول مجدداً');
+      } finally {
+        isPublishing = false;
+        btn.innerText = 'نشر العنصر والتنبيه';
+        btn.disabled = false;
       }
-
-      const nowMs = Date.now();
-      const newTask = {
-        id: 'task-' + nowMs,
-        type: currentType,
-        course: course,
-        title: title,
-        desc: desc,
-        fileUrl: fileUrl,
-        fileData: uploadedBase64File || '',
-        author: author,
-        dueDate: dueIso,
-        timingMode: currentTimingMode,
-        createdAt: nowMs,
-        notified_24h: false,
-        notified_2h: false
-      };
-
-      // If the item is published already inside a reminder window, the
-      // "new item" message covers it — don't send a reminder right after it.
-      if (dueIso) {
-        const diff = new Date(dueIso).getTime() - nowMs;
-        if (diff <= ALERT_24H_MS) newTask.notified_24h = true;
-        if (diff <= ALERT_2H_MS) newTask.notified_2h = true;
-      }
-
-      const savedOk = await commitChange(list => { list.unshift(newTask); });
-
-      btn.innerText = 'نشر العنصر والتنبيه';
-      btn.disabled = false;
-
-      if (!savedOk) {
-        showToast('تعذر النشر، تحقق من الاتصال وحاول مجدداً');
-        return;
-      }
-
-      if (currentType !== 'ملف مادة') {
-        sendRawTelegramMsg(buildPublishMessage(newTask));
-      }
-
-      document.getElementById('taskTitleInput').value = '';
-      document.getElementById('taskDescInput').value = '';
-      document.getElementById('taskFileInput').value = '';
-      document.getElementById('localFileInput').value = '';
-      document.getElementById('selectedFileName').style.display = 'none';
-      uploadedBase64File = '';
-      closeAddModal();
-      showToast(currentType === 'ملف مادة' ? '📁 تم رفع الملف للمادة' : '✓ تم النشر وإرسال التنبيه');
     }
 
     function confirmDelete(id) {
@@ -1674,30 +1941,20 @@
       document.getElementById('btnModeStart').classList.toggle('active', mode === 'start');
     }
 
-    function toggleAnnouncementDateInput(checked) {
-      document.getElementById('dateGroupWrapper').style.display = checked ? 'block' : 'none';
-    }
-
     function selectType(btn, typeName) {
       document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       currentType = typeName;
 
       const dateWrap = document.getElementById('dateGroupWrapper');
-      const annToggleWrapper = document.getElementById('announcementToggleWrapper');
-
       if (typeName === 'ملف مادة') {
         dateWrap.style.display = 'none';
-        annToggleWrapper.style.display = 'none';
-      } else if (typeName === 'إعلان') {
-        annToggleWrapper.style.display = 'flex';
-        document.getElementById('enableAnnouncementDate').checked = false;
-        dateWrap.style.display = 'none';
-      } else {
-        annToggleWrapper.style.display = 'none';
-        dateWrap.style.display = 'block';
-        selectTimeMode(typeName.includes('اختبار') ? 'start' : 'end');
+        return;
       }
+      dateWrap.style.display = 'block';
+      // announcements usually have no date; everything else starts with date + time
+      setSchedMode('add', typeName === 'إعلان' ? 'none' : 'timed');
+      selectTimeMode(typeName.includes('اختبار') ? 'start' : 'end');
     }
 
     function openAddModal() { openModal('alertModal'); }
@@ -1733,9 +1990,9 @@
         document.getElementById('completedBody').classList.add('open');
         document.getElementById('completedHeader').classList.add('open');
       }
-      const today = new Date().toISOString().split('T')[0];
-      const dateInp = document.getElementById('taskDateInput');
-      if (dateInp) dateInp.value = today;
+      document.getElementById('taskDateInput').value = riyadhDateStr(Date.now());   // today in Saudi time
+      setSchedMode('add', 'timed');
+      setSchedMode('edit', 'timed');
 
       fetchCloudTasks();
     });
