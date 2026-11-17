@@ -363,6 +363,13 @@
     .type-legend { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
     .type-legend span { font-size: 12px; font-weight: 800; padding: 4px 10px; border-radius: 999px; }
 
+    .sync-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; background: #fff8eb; border: 1px solid #f3e2bf; color: #7c5a12; border-radius: 14px; padding: 9px 12px; margin-bottom: 12px; font-size: 12.5px; font-weight: 700; cursor: pointer; }
+    .sync-row b { font-weight: 900; }
+    .sync-row.on { background: var(--c-disc-soft); border-color: #cfe8d6; color: var(--c-disc); }
+    .sync-row .sr-arrow { font-size: 14px; opacity: .7; }
+    #trashList { display: flex; flex-direction: column; gap: 8px; }
+    .trash-note { font-size: 11.5px; color: #8a8478; font-weight: 700; margin: 0 4px 8px; }
+
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
   </style>
 </head>
@@ -407,6 +414,11 @@
       <div class="stat"><b id="statActive">–</b><span>نشطة</span></div>
       <div class="stat stat-urgent"><b id="statUrgent">–</b><span>خلال 24 ساعة</span></div>
       <div class="stat stat-done"><b id="statDone">–</b><span>مكتملة</span></div>
+    </div>
+
+    <div class="sync-row" id="syncRow" onclick="openSyncSheet()">
+      <span id="syncRowText">💾 إنجازاتك محفوظة على هذا الجهاز فقط — <b>احفظها باسمك</b></span>
+      <span class="sr-arrow">‹</span>
     </div>
 
     <div class="filters-block">
@@ -459,6 +471,18 @@
     <div class="fold-body" id="archiveContainer">
       <div id="dynamicArchiveList"></div>
     </div>
+
+    <!-- Trash -->
+    <div id="trashSection" style="display:none">
+      <div class="fold-header" id="trashHeader" onclick="toggleFold('trash')">
+        <span class="fh-title">🗑️ المحذوفة مؤخراً <span class="fh-count" id="trashCount">0</span></span>
+        <svg class="chev" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+      </div>
+      <div class="fold-body" id="trashBody">
+        <p class="trash-note">تبقى هنا 30 يوماً ثم تُحذف نهائياً. أي شخص يقدر يسترجعها.</p>
+        <div id="trashList"></div>
+      </div>
+    </div>
   </div>
 
   <!-- Section: Courses Tab View -->
@@ -507,6 +531,24 @@
       </div>
 
       <button class="btn-toggle-notif" id="btnNotifToggle" onclick="closeNotifSheet()">تم الفهم ✓</button>
+    </div>
+  </div>
+
+  <!-- Modal: Save completed items by name -->
+  <div class="modal-overlay" id="syncModal">
+    <div class="modal-sheet">
+      <div class="sheet-header">
+        <div class="sheet-title">احفظ إنجازاتك باسمك</div>
+        <button class="btn-close-circle" onclick="closeModal('syncModal')">✕</button>
+      </div>
+      <div class="notif-rule"><span class="nr-ico">☁️</span><div><b>لماذا؟</b><span>بدون اسم، علامات «حليته؟» محفوظة في هذا المتصفح فقط، وتضيع إذا مُسحت بيانات Safari أو فتحت الموقع من الشاشة الرئيسية بدل Safari.</span></div></div>
+      <div class="notif-rule"><span class="nr-ico">🔁</span><div><b>على جهاز آخر</b><span>اكتب نفس الاسم بالضبط وترجع لك كل المهام المكتملة.</span></div></div>
+      <div class="form-group" style="margin-top:14px">
+        <label>اسم الحفظ</label>
+        <input type="text" class="custom-input" id="syncCodeInput" maxlength="40" placeholder="مثال: عبدالله-الشمري-27">
+        <span class="sub-hint">اختر اسماً مميزاً (اسمك + رقم) حتى لا يتطابق مع زميل.</span>
+      </div>
+      <button type="button" class="btn-submit-post" onclick="saveSyncCode()">حفظ ومزامنة ✓</button>
     </div>
   </div>
 
@@ -675,6 +717,10 @@
   <script>
     const DB_URL = "https://pm2-6f219-default-rtdb.firebaseio.com/tasks.json";
     const DB_TASKS_BASE = DB_URL.replace(/\.json$/, '');   // .../tasks
+    const DB_ROOT = DB_TASKS_BASE.replace(/\/tasks$/, '');
+    const FILES_BASE = DB_ROOT + '/files';                  // attachments live here, not inside the task list
+    const COMPLETIONS_BASE = DB_ROOT + '/completions';      // each student's "done" list, by their save name
+    const TRASH_KEEP_MS = 30 * 24 * 60 * 60 * 1000;         // deleted items can be restored for 30 days
     const TELEGRAM_BOT_TOKEN = '8808778506:AAF-SrNE5eJ3CJzizs2HjR4CU7UNxIPqY8w';
     const TELEGRAM_CHAT_ID = '@PM2_Taskes';
     const APP_URL = 'https://algrbin623-del.github.io/pm2/';
@@ -720,8 +766,10 @@
       return TYPE_META[type] || { cls: 't-hw', icon: '🔔', label: type || 'تنبيه', tgNew: `تنبيه جديد: ${type || ''}` };
     }
 
-    let currentTasksList = [];
+    let currentTasksList = [];    // visible items (not in the trash)
+    let deletedTasks = [];        // items in "المحذوفة مؤخراً"
     let taskKeyMap = {};          // task.id -> key of the item inside /tasks (array index)
+    const fileCache = {};         // task.id -> downloaded attachment
     let currentType = 'واجب';
     let currentTimingMode = 'end';
     let activeTypeFilter = 'all';
@@ -949,17 +997,48 @@
       reader.readAsDataURL(file);
     }
 
-    function openAttachedFile(taskId) {
+    // ---------- Attachments are stored at /files/{taskId} ----------
+    // Keeping them out of /tasks keeps the list small: it is re-downloaded every 15 seconds,
+    // and a 4 MB list on a phone connection was slow enough to make saves fail.
+    function fileUrlFor(id) { return `${FILES_BASE}/${encodeURIComponent(id)}.json`; }
+    async function putFile(id, dataUrl) {
+      const r = await fetch(fileUrlFor(id), { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(dataUrl) });
+      return r.ok;
+    }
+    async function getFile(id) {
+      const r = await fetch(fileUrlFor(id) + '?t=' + Date.now(), { cache: 'no-store' });
+      if (!r.ok) return '';
+      const v = await r.json();
+      return typeof v === 'string' ? v : '';
+    }
+    function mimeOf(dataUrl) { const m = /^data:([^;,]+)/.exec(dataUrl || ''); return m ? m[1] : ''; }
+    function hasAttachment(t) { return !!(t && (t.fileData || t.fileUrl || t.hasFileData)); }
+
+    async function openAttachedFile(taskId) {
       const task = currentTasksList.find(t => t && t.id === taskId);
       if (!task) return;
-      const file = task.fileData || task.fileUrl;
-      if (!file) return;
+      let file = task.fileData || fileCache[task.id] || '';
 
+      if (!file && task.hasFileData) {
+        showToast('⏳ جاري تحميل المرفق...');
+        try { file = await getFile(task.id); } catch (e) { file = ''; }
+        if (!file) { showToast('تعذر تحميل المرفق، تحقق من الاتصال'); return; }
+        fileCache[task.id] = file;
+        // after a download the browser may block the new tab; the file is cached, so a second tap opens it instantly
+        if (!openDataUrl(file, false)) showToast('✓ المرفق جاهز، اضغط «المرفق» مرة أخرى لفتحه');
+        return;
+      }
+
+      if (!file) file = task.fileUrl || '';
+      if (!file) return;
       if (file.startsWith('http://') || file.startsWith('https://')) {
         window.open(file, '_blank');
         return;
       }
+      openDataUrl(file, true);
+    }
 
+    function openDataUrl(file, allowNavigate) {
       try {
         const parts = file.split(';base64,');
         const contentType = parts[0].replace('data:', '');
@@ -973,29 +1052,143 @@
         const blobUrl = URL.createObjectURL(blob);
 
         const newWin = window.open(blobUrl, '_blank');
-        if (!newWin) {
-          window.location.href = blobUrl;
-        }
+        if (newWin) return true;
+        if (allowNavigate) { window.location.href = blobUrl; return true; }
+        return false;
       } catch (err) {
         alert('تعذر فتح الملف، يرجى المحاولة مرة أخرى.');
+        return true;
       }
     }
 
     function fileKind(t) {
-      const f = t.fileData || t.fileUrl || '';
-      if (f.startsWith('data:application/pdf')) return { icon: '📕', label: 'ملف PDF' };
-      if (f.startsWith('data:image')) return { icon: '🖼️', label: 'صورة' };
-      if (f.startsWith('http')) return { icon: '🔗', label: 'رابط خارجي' };
+      if (t.fileData || t.hasFileData) {
+        const mime = t.fileMime || mimeOf(t.fileData);
+        if (mime === 'application/pdf') return { icon: '📕', label: 'ملف PDF' };
+        if (mime.startsWith('image')) return { icon: '🖼️', label: 'صورة' };
+        return { icon: '📄', label: 'ملف' };
+      }
+      if ((t.fileUrl || '').startsWith('http')) return { icon: '🔗', label: 'رابط خارجي' };
       return { icon: '📄', label: 'ملف' };
     }
 
-    // ================= Done state (local per device) =================
+    // One-time move of attachments that are still inside the task list (old items) to /files.
+    // Each file is written, read back and compared before it is removed from the list.
+    let migratingFiles = false;
+    async function migrateEmbeddedFiles() {
+      if (migratingFiles || isSavingActive) return;
+      const pending = currentTasksList.concat(deletedTasks).filter(t => t.fileData);
+      if (!pending.length) return;
+      migratingFiles = true;
+      try {
+        const moved = {};
+        for (const t of pending) {
+          if (!(await putFile(t.id, t.fileData))) continue;
+          if ((await getFile(t.id)) === t.fileData) moved[t.id] = { mime: mimeOf(t.fileData), len: t.fileData.length };
+        }
+        if (Object.keys(moved).length) {
+          await commitChange(list => list.forEach(x => {
+            const m = moved[x.id];
+            if (m && x.fileData && x.fileData.length === m.len) {
+              x.hasFileData = true;
+              x.fileMime = m.mime;
+              x.fileData = '';
+            }
+          }));
+        }
+      } catch (e) {
+        console.error('تعذر نقل المرفقات:', e);
+      } finally {
+        migratingFiles = false;
+      }
+    }
+
+    // ================= Done state =================
+    // Kept on the device, and also in the cloud under a save name the student picks,
+    // so it survives Safari clearing site data, and the home-screen app and Safari
+    // (which have separate storage on iPhone) see the same list.
     function getCompletedTaskIds() {
       try {
-        return JSON.parse(localStorage.getItem('my_completed_tasks') || '[]');
+        const v = JSON.parse(localStorage.getItem('my_completed_tasks') || '[]');
+        return Array.isArray(v) ? v : [];
       } catch (e) {
         return [];
       }
+    }
+    function setCompletedTaskIds(ids) { localStorage.setItem('my_completed_tasks', JSON.stringify(Array.from(new Set(ids)))); }
+
+    function getSyncCode() { return localStorage.getItem('done_sync_code') || ''; }
+    function cleanSyncCode(s) { return String(s || '').trim().replace(/[.#$\[\]\/\s]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40); }
+    function completionsUrl(code, id) { return `${COMPLETIONS_BASE}/${encodeURIComponent(code)}${id ? '/' + encodeURIComponent(id) : ''}.json`; }
+
+    // changes not yet confirmed by the server: { taskId: true | false }
+    function getPendingDone() { try { return JSON.parse(localStorage.getItem('done_pending') || '{}') || {}; } catch (e) { return {}; } }
+    function setPendingDone(p) { localStorage.setItem('done_pending', JSON.stringify(p)); }
+
+    let syncingDone = false;
+    async function syncCompletions() {
+      const code = getSyncCode();
+      if (!code || syncingDone) return;
+      syncingDone = true;
+      try {
+        const pending = getPendingDone();
+        const ids = Object.keys(pending);
+        if (ids.length) {
+          const patch = {};
+          ids.forEach(id => { patch[id] = pending[id] ? true : null; });   // null removes the key
+          const w = await fetch(completionsUrl(code), { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(patch) });
+          if (w.ok) {
+            const now = getPendingDone();
+            ids.forEach(id => { if (now[id] === pending[id]) delete now[id]; });
+            setPendingDone(now);
+          }
+        }
+        const r = await fetch(completionsUrl(code) + '?t=' + Date.now(), { cache: 'no-store' });
+        if (!r.ok) return;
+        const remote = (await r.json()) || {};
+        if (typeof remote !== 'object' || remote.error) return;
+        const stillPending = getPendingDone();
+        const set = new Set(Object.keys(remote).filter(k => remote[k] === true));
+        Object.entries(stillPending).forEach(([id, v]) => { if (v) set.add(id); else set.delete(id); });
+        const before = JSON.stringify(getCompletedTaskIds().slice().sort());
+        setCompletedTaskIds([...set]);
+        if (JSON.stringify([...set].sort()) !== before) renderTasks();
+      } catch (e) {
+        console.error('تعذر مزامنة المكتملة:', e);
+      } finally {
+        syncingDone = false;
+      }
+    }
+
+    function updateSyncRow() {
+      const code = getSyncCode();
+      const el = document.getElementById('syncRowText');
+      if (!el) return;
+      el.innerHTML = code
+        ? `☁️ إنجازاتك محفوظة باسم: <b>${esc(code)}</b>`
+        : '💾 إنجازاتك محفوظة على هذا الجهاز فقط — <b>احفظها باسمك</b>';
+      document.getElementById('syncRow').classList.toggle('on', !!code);
+    }
+    function openSyncSheet() {
+      document.getElementById('syncCodeInput').value = getSyncCode();
+      openModal('syncModal');
+    }
+    async function saveSyncCode() {
+      const code = cleanSyncCode(document.getElementById('syncCodeInput').value);
+      if (code.length < 3) { alert('اكتب اسماً من 3 أحرف على الأقل'); return; }
+      const changed = code !== getSyncCode();
+      localStorage.setItem('done_sync_code', code);
+      if (changed) {
+        // upload what this device already has, then merge with what is saved under that name
+        const p = getPendingDone();
+        getCompletedTaskIds().forEach(id => { if (!(id in p)) p[id] = true; });
+        setPendingDone(p);
+      }
+      closeModal('syncModal');
+      updateSyncRow();
+      showToast('⏳ جاري المزامنة...');
+      await syncCompletions();
+      showToast(getPendingDone() && Object.keys(getPendingDone()).length ? '⚠️ حُفظ الاسم، وستكتمل المزامنة عند توفر الاتصال' : '☁️ تم حفظ إنجازاتك باسمك');
     }
 
     function burstConfetti(el) {
@@ -1020,7 +1213,13 @@
       let completed = getCompletedTaskIds();
       const wasDone = completed.includes(taskId);
       completed = wasDone ? completed.filter(id => id !== taskId) : [...completed, taskId];
-      localStorage.setItem('my_completed_tasks', JSON.stringify(completed));
+      setCompletedTaskIds(completed);
+      if (getSyncCode()) {
+        const p = getPendingDone();
+        p[taskId] = !wasDone;
+        setPendingDone(p);
+        syncCompletions();
+      }
 
       if (wasDone) {
         renderTasks();
@@ -1052,25 +1251,44 @@
       return { list: entries.map(([, v]) => v), keys };
     }
 
+    function applyServerList(list, keys) {
+      taskKeyMap = keys;
+      currentTasksList = list.filter(t => !t.deleted);
+      deletedTasks = list.filter(t => t.deleted);
+    }
+
+    // Throws on HTTP errors and on Firebase error bodies ({ "error": "..." }),
+    // which would otherwise be read as "the list is empty".
+    async function readServerResponse(res) {
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      if (data && !Array.isArray(data) && typeof data.error === 'string') throw new Error(data.error);
+      return data;
+    }
+
     async function fetchCloudTasks() {
       if (isSavingActive) return;
       try {
         const res = await fetch(DB_URL + '?t=' + Date.now(), { cache: 'no-store' });
-        const { list, keys } = normalizeServerData(await res.json());
+        const data = await readServerResponse(res);
         if (isSavingActive) return;
-        currentTasksList = list;
-        taskKeyMap = keys;
+        const { list, keys } = normalizeServerData(data);
+        applyServerList(list, keys);
         renderTasks();
         renderCoursesTab();
         checkScheduledAlerts();
+        migrateEmbeddedFiles();
       } catch (err) {
         console.error("خطأ جلب البيانات:", err);
       }
+      syncCompletions();
     }
 
     // Read the latest list, apply the change, and write it back atomically.
     // The ETag/if-match pair makes the write fail (HTTP 412) if another device
     // changed the data in between — so nobody's edits or alert flags get overwritten.
+    // If the latest list can't be read, NOTHING is written: writing this device's
+    // copy instead is what used to erase items other people had just added.
     async function commitChange(mutator) {
       isSavingActive = true;
       try {
@@ -1079,25 +1297,38 @@
           try {
             const res = await fetch(DB_URL + '?t=' + Date.now(), { headers: { 'X-Firebase-ETag': 'true' }, cache: 'no-store' });
             etag = res.headers.get('ETag');
-            fresh = normalizeServerData(await res.json()).list;
+            fresh = normalizeServerData(await readServerResponse(res)).list;
           } catch (e) {
-            fresh = currentTasksList.map(x => ({ ...x }));
-            etag = null;
+            console.error('تعذر قراءة أحدث نسخة، أُلغي الحفظ حتى لا تُستبدل البيانات:', e);
+            return false;
           }
+          if (!etag) { console.error('لا يوجد ETag، أُلغي الحفظ'); return false; }
 
+          const liveBefore = fresh.filter(t => !t.deleted).length;
           mutator(fresh);
 
-          const headers = { 'Content-Type': 'application/json' };
-          if (etag) headers['if-match'] = etag;
+          // items in the trash for more than 30 days are removed for good
+          const purgeBefore = Date.now() - TRASH_KEEP_MS;
+          const purged = fresh.filter(t => t.deleted && Number(t.deletedAt || 0) < purgeBefore);
+          fresh = fresh.filter(t => !purged.includes(t));
+
+          // safety net: a single change may remove at most one visible item
+          if (fresh.filter(t => !t.deleted).length < liveBefore - 1) {
+            console.error('أُوقف حفظ كان سيحذف عدة عناصر دفعة واحدة');
+            return false;
+          }
+
+          const headers = { 'Content-Type': 'application/json', 'if-match': etag };
           try {
             const put = await fetch(DB_URL, { method: 'PUT', headers, body: JSON.stringify(fresh) });
             if (put.status === 412) continue;            // data changed meanwhile → retry with fresh copy
             if (!put.ok) return false;
-            currentTasksList = fresh;
-            taskKeyMap = {};
-            fresh.forEach((t, i) => { taskKeyMap[t.id] = String(i); });
+            const keys = {};
+            fresh.forEach((t, i) => { keys[t.id] = String(i); });
+            applyServerList(fresh, keys);
             renderTasks();
             renderCoursesTab();
+            purged.forEach(t => { if (t.hasFileData) fetch(fileUrlFor(t.id), { method: 'DELETE' }).catch(() => {}); });
             return true;
           } catch (e) {
             console.error("خطأ حفظ البيانات:", e);
@@ -1238,7 +1469,7 @@
 
       const det = tgDetails(t.desc);
       if (det) lines.push('', isAnn ? '📝 <b>نص الإعلان:</b>' : '📝 <b>التفاصيل:</b>', det);
-      if (t.fileData || t.fileUrl) lines.push('📎 يتضمن مرفقاً — متاح عبر المنصة');
+      if (hasAttachment(t)) lines.push('📎 يتضمن مرفقاً — متاح عبر المنصة');
 
       lines.push(...tgFooter(t, tgRemindersNote(t, now)));
       return lines.join('\n');
@@ -1421,7 +1652,7 @@
     function buildTaskCard(t, opts) {
       const m = getTypeMeta(t.type);
       const due = parseDue(t);
-      const fileTarget = t.fileData || t.fileUrl;
+      const fileTarget = hasAttachment(t);
       const id = jsArg(t.id);
       const live = !opts.expired && !opts.done && due !== null;
 
@@ -1519,7 +1750,8 @@
       // stats
       document.getElementById('statActive').textContent = active.length;
       document.getElementById('statUrgent').textContent = active.filter(t => { const d = parseDue(t); return d !== null && d - now <= ALERT_24H_MS; }).length;
-      document.getElementById('statDone').textContent = done.length;
+      // every item you finished, including ones whose date has passed (they move to the archive but stay done)
+      document.getElementById('statDone').textContent = alertTasks.filter(t => completedSet.has(t.id)).length;
 
       document.getElementById('activeCounterText').innerText = `${active.length} تنبيهات نشطة`;
       document.getElementById('hideDoneSwitch').classList.toggle('on', hideDone);
@@ -1544,8 +1776,42 @@
       archiveDynamic.innerHTML = expired.length ? '' : '<div class="empty-state" style="padding:18px">لا توجد عناصر منتهية.</div>';
       expired.forEach(t => archiveDynamic.appendChild(buildTaskCard(t, { expired: true, done: completedSet.has(t.id) })));
 
+      renderTrash();
       updateAllTimers();
       if (currentTasksList.length) setTimeout(() => document.body.classList.add('loaded'), 500);
+    }
+
+    function renderTrash() {
+      const section = document.getElementById('trashSection');
+      if (!section) return;
+      const items = deletedTasks.slice().sort((a, b) => Number(b.deletedAt || 0) - Number(a.deletedAt || 0));
+      section.style.display = items.length ? 'block' : 'none';
+      document.getElementById('trashCount').textContent = items.length;
+      document.getElementById('trashList').innerHTML = items.map(t => {
+        const m = getTypeMeta(t.type);
+        const when = t.deletedAt ? formatGregorianDate(new Date(Number(t.deletedAt)).toISOString(), false) : '';
+        return `
+          <div class="file-item-card">
+            <div class="file-type-ico">${m.icon}</div>
+            <div class="file-item-main">
+              <div class="file-item-title">${esc(t.title)}</div>
+              <div class="file-item-sub">${esc(m.label)} • ${esc(t.course || 'عام')}${when ? ' • حُذف ' + esc(when) : ''}</div>
+            </div>
+            <div class="file-item-actions">
+              <button class="btn-file-open" onclick="restoreTask('${jsArg(t.id)}', this)">استرجاع</button>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    async function restoreTask(id, btn) {
+      if (btn) { btn.disabled = true; btn.textContent = '...'; }
+      const ok = await commitChange(list => {
+        const t = list.find(x => x.id === id);
+        if (t) { delete t.deleted; delete t.deletedAt; }
+      });
+      showToast(ok ? '↩️ تم الاسترجاع' : 'تعذر الاسترجاع، حاول مجدداً');
+      if (!ok && btn) { btn.disabled = false; btn.textContent = 'استرجاع'; }
     }
 
     function renderCoursesTab() {
@@ -1554,7 +1820,7 @@
       container.innerHTML = '';
 
       ALL_COURSES.forEach((courseName, idx) => {
-        const courseFiles = currentTasksList.filter(t => t && t.course === courseName && (t.type === 'ملف مادة' || t.fileData || t.fileUrl));
+        const courseFiles = currentTasksList.filter(t => t && t.course === courseName && (t.type === 'ملف مادة' || hasAttachment(t)));
         const meta = COURSE_META[courseName] || COURSE_META['أخرى'];
         const isOpen = openCourses.has(courseName);
 
@@ -1577,7 +1843,7 @@
               ${courseFiles.length === 0 ? '<p class="no-files">لا توجد ملفات حالياً لهذه المادة.</p>' : ''}
               ${courseFiles.map(f => {
                 const k = fileKind(f);
-                const hasFile = f.fileData || f.fileUrl;
+                const hasFile = hasAttachment(f);
                 return `
                 <div class="file-item-card">
                   <div class="file-type-ico">${k.icon}</div>
@@ -1842,14 +2108,24 @@
 
       try {
         const nowMs = Date.now();
+        const newId = 'task-' + nowMs;
+        if (uploadedBase64File) {
+          btn.innerText = 'جاري رفع المرفق...';
+          let up = false;
+          try { up = await putFile(newId, uploadedBase64File); } catch (e) { up = false; }
+          if (!up) { showToast('تعذر رفع المرفق، تحقق من الاتصال وحاول مجدداً'); return; }
+          btn.innerText = 'جاري النشر والمزامنة...';
+        }
         const newTask = {
-          id: 'task-' + nowMs,
+          id: newId,
           type: type,
           course: course,
           title: title,
           desc: desc,
           fileUrl: fileUrl,
-          fileData: uploadedBase64File || '',
+          fileData: '',
+          hasFileData: !!uploadedBase64File,
+          fileMime: uploadedBase64File ? mimeOf(uploadedBase64File) : '',
           author: author,
           dueDate: sched.dueDate,
           hasTime: sched.hasTime,
@@ -1860,8 +2136,9 @@
         };
         markPassedTiers(newTask, nowMs);
 
-        const savedOk = await commitChange(list => { list.unshift(newTask); });
+        const savedOk = await commitChange(list => { list.unshift({ ...newTask }); });
         if (!savedOk) {
+          if (newTask.hasFileData) fetch(fileUrlFor(newId), { method: 'DELETE' }).catch(() => {});
           showToast('تعذر النشر، تحقق من الاتصال وحاول مجدداً');
           return;
         }
@@ -1894,7 +2171,7 @@
     function confirmDelete(id) {
       const task = currentTasksList.find(t => t && t.id === id);
       itemToDelete = id;
-      document.getElementById('confirmMessageText').innerText = `هل أنت متأكد من رغبتك في حذف «${task ? task.title : ''}»؟`;
+      document.getElementById('confirmMessageText').innerText = `هل تريد حذف «${task ? task.title : ''}»؟\nيمكن استرجاعه من «المحذوفة مؤخراً» خلال 30 يوماً.`;
       openModal('confirmModal');
     }
 
@@ -1911,13 +2188,16 @@
       btn.disabled = true;
 
       // optimistic UI
+      const removed = currentTasksList.find(t => t && t.id === id);
       currentTasksList = currentTasksList.filter(t => t && t.id !== id);
+      if (removed) deletedTasks = [{ ...removed, deleted: true, deletedAt: Date.now() }, ...deletedTasks];
       renderTasks();
       renderCoursesTab();
 
+      // soft delete: the item goes to "المحذوفة مؤخراً" and can be restored for 30 days
       const ok = await commitChange(list => {
-        const i = list.findIndex(t => t.id === id);
-        if (i > -1) list.splice(i, 1);
+        const t = list.find(x => x.id === id);
+        if (t) { t.deleted = true; t.deletedAt = Date.now(); }
       });
 
       btn.innerText = 'نعم، احذف';
@@ -1993,6 +2273,7 @@
       document.getElementById('taskDateInput').value = riyadhDateStr(Date.now());   // today in Saudi time
       setSchedMode('add', 'timed');
       setSchedMode('edit', 'timed');
+      updateSyncRow();
 
       fetchCloudTasks();
     });
